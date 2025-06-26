@@ -3,7 +3,6 @@ import { pool } from "../db.js";
 export const getPacientes = async (req, res) => {
     try {
       const id_usuario = req.params.id;
-      // Quitar "AND activo = TRUE" porque esa columna no existe
       const [result] = await pool.query("SELECT * FROM Pacientes WHERE id_usuario = ?", [id_usuario]);
       res.json(result); 
     } catch (error) {
