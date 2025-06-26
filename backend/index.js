@@ -214,11 +214,13 @@ app.get('/health/db', async (req, res) => {
 });
 
 // Endpoint temporal para ver usuarios (SOLO para debugging)
+// Corregir el endpoint debug/users quitando created_at:
 app.get('/debug/users', async (req, res) => {
   let connection;
   try {
     connection = await pool.getConnection();
-    const [users] = await connection.query("SELECT id_usuario, nombre, username, email, created_at FROM Usuarios");
+    // Quitar created_at ya que no existe esa columna
+    const [users] = await connection.query("SELECT id_usuario, nombre, username, email FROM Usuarios");
     res.json({ 
       message: "Usuarios en la base de datos",
       count: users.length,
