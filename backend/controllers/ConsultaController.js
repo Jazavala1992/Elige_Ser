@@ -3,7 +3,7 @@ import { pool } from "../db.js";
 export const getConsultas = async (req, res) => {
     try {
         const id_paciente = req.params.id;
-        const [result] = await pool.query("SELECT * FROM Consultas WHERE id_paciente = ? AND activo = TRUE", [id_paciente]);
+        const [result] = await pool.query("SELECT * FROM Consultas WHERE id_paciente = ?", [id_paciente]);
         res.json(result);
     } catch (error) {
         console.error("Error al obtener las consultas:", error);

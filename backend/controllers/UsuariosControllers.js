@@ -133,3 +133,29 @@ export const deleteUsuario = async (req, res) => {
     }
 }
 
+// Cambiado el query para obtener pacientes
+export const getPacientesPorUsuario = async (req, res) => {
+    try {
+        const [result] = await pool.query("SELECT * FROM Pacientes WHERE id_usuario = ?", [req.params.id_usuario]);
+        
+        if (result.length === 0) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'No se encontraron pacientes para este usuario' 
+            });
+        }
+        
+        res.json({
+            success: true,
+            pacientes: result
+        });
+    } catch (error) {
+        console.error("Error en el servidor:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error interno del servidor', 
+            error: error.message 
+        });
+    }
+};
+
