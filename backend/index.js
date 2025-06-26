@@ -73,6 +73,53 @@ app.get('/health/db', async (req, res) => {
   }
 });
 
+// ENDPOINT DIRECTO PARA OBTENER USUARIO
+app.get('/usuario/:id', async (req, res) => {
+  let connection;
+  try {
+    const { id } = req.params;
+    console.log('=== GET USUARIO ===');
+    console.log('ID solicitado:', id);
+
+    connection = await pool.getConnection();
+    const [result] = await connection.query(
+      "SELECT id_usuario, nombre, username, email FROM Usuarios WHERE id_usuario = ?", 
+      [id]
+    );
+
+    console.log('Resultado de la query:', result);
+
+    if (result.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Usuario no encontrado" 
+      });
+    }
+
+    const responseData = {
+      success: true,
+      user: {
+        id: result[0].id_usuario,
+        nombre: result[0].nombre,
+        username: result[0].username,
+        email: result[0].email
+      }
+    };
+
+    console.log('Respuesta enviada:', responseData);
+    res.json(responseData);
+  } catch (error) {
+    console.error("Error al obtener usuario:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Error interno del servidor",
+      error: error.message 
+    });
+  } finally {
+    if (connection) connection.release();
+  }
+});
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });
