@@ -36,32 +36,59 @@ app.get('/ping', (req, res) => {
   res.json({ ping: 'pong', timestamp: new Date().toISOString() });
 });
 
-// Actualizar la ruta de REGISTRO:
+// Actualizar la ruta de REGISTRO con más debugging:
 app.post('/register', async (req, res) => {
   const { nombre, username, email, password } = req.body;
   let connection;
   
   try {
+    console.log('=== REGISTRO DEBUG ===');
+    console.log('Datos recibidos:', { nombre, username, email, password: '***' });
+    
     if (!nombre || !username || !email || !password) {
       return res.status(400).json({ error: "Todos los campos son obligatorios" });
     }
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
+    console.log('Password hasheado exitosamente');
 
     connection = await pool.getConnection();
+    console.log('Conexión a DB obtenida');
+    
     const query = "INSERT INTO Usuarios (nombre, username, email, password) VALUES (?, ?, ?, ?)";
+    console.log('Query a ejecutar:', query);
+    console.log('Parámetros:', [nombre, username, email, 'hashedPassword']);
+    
     const [result] = await connection.query(query, [nombre, username, email, hashedPassword]);
+    console.log('Resultado de inserción:', result);
 
-    res.status(201).json({ message: "Usuario creado exitosamente", id: result.insertId });
+    res.status(201).json({ 
+      message: "Usuario creado exitosamente", 
+      id: result.insertId,
+      debug: {
+        affectedRows: result.affectedRows,
+        insertId: result.insertId
+      }
+    });
   } catch (error) {
-    console.error("Error al crear el usuario:", error);
+    console.error("=== ERROR EN REGISTRO ===");
+    console.error("Error completo:", error);
+    console.error("Error code:", error.code);
+    console.error("Error message:", error.message);
     
     if (error.code === 'ER_DUP_ENTRY') {
       return res.status(400).json({ error: "El email ya existe" });
     }
     
-    res.status(500).json({ error: "Error interno del servidor" });
+    // Mostrar el error específico para debug
+    res.status(500).json({ 
+      error: "Error interno del servidor",
+      debug: {
+        code: error.code,
+        message: error.message
+      }
+    });
   } finally {
     if (connection) connection.release();
   }
