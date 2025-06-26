@@ -14,7 +14,7 @@ function CardUsuario() {
                 console.log("ID del usuario enviado a getUsuario:", userId); // Depuración
                 const data = await getUsuario(userId); // Llama a la función del contexto
                 console.log("Datos del usuario obtenidos:", data); // Depuración
-                setUsuario(data); // Actualiza el estado con los datos del usuario
+                setUsuario(data.user);
             } catch (error) {
                 console.error("Error al obtener el usuario:", error);
             }
