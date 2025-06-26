@@ -13,36 +13,29 @@ export const registerUsuario = async (req, res) => {
       return res.status(400).json({ error: "Todos los campos son obligatorios" });
     }
 
-    // Verificar conexión a la base de datos
-    console.log("Probando conexión a la base de datos...");
-    const [testResult] = await pool.query('SELECT 1 as test');
-    console.log("Conexión OK:", testResult);
-
-    // Encriptar la contraseña
+    // Encriptar la contraseña (sin test de conexión extra)
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Usar el mismo nombre de tabla que en otras funciones (Usuarios con mayúscula)
+    // Insertar usuario directamente
     const query = "INSERT INTO Usuarios (nombre, username, email, password) VALUES (?, ?, ?, ?)";
     console.log("Ejecutando query:", query);
-    console.log("Con valores:", [nombre, username, email, "***"]);
     
     const [result] = await pool.query(query, [nombre, username, email, hashedPassword]);
 
     console.log("Usuario creado exitosamente:", result.insertId);
     res.status(201).json({ message: "Usuario creado exitosamente", id: result.insertId });
   } catch (error) {
-    console.error("Error completo al crear el usuario:", error);
-    console.error("Error code:", error.code);
-    console.error("Error message:", error.message);
-    console.error("Error stack:", error.stack);
+    console.error("Error al crear el usuario:", error);
     
-    // Más información específica del error
     if (error.code === 'ER_NO_SUCH_TABLE') {
       return res.status(500).json({ error: "La tabla Usuarios no existe" });
     }
     if (error.code === 'ER_DUP_ENTRY') {
       return res.status(400).json({ error: "El email o username ya existe" });
+    }
+    if (error.code === 'ER_USER_LIMIT_REACHED') {
+      return res.status(503).json({ error: "Demasiadas conexiones, intenta de nuevo" });
     }
     
     res.status(500).json({ error: "Error interno del servidor", details: error.message });
