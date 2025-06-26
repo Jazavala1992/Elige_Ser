@@ -136,6 +136,25 @@ app.get('/health/db', async (req, res) => {
   }
 });
 
+// Endpoint temporal para ver usuarios (SOLO para debugging)
+app.get('/debug/users', async (req, res) => {
+  let connection;
+  try {
+    connection = await pool.getConnection();
+    const [users] = await connection.query("SELECT id_usuario, nombre, username, email, created_at FROM Usuarios");
+    res.json({ 
+      message: "Usuarios en la base de datos",
+      count: users.length,
+      users: users 
+    });
+  } catch (error) {
+    console.error("Error getting users:", error);
+    res.status(500).json({ error: error.message });
+  } finally {
+    if (connection) connection.release();
+  }
+});
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });
