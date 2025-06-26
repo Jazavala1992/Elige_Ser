@@ -12,21 +12,19 @@ import { pool } from './db.js';
 
 const app = express();
 
-// CORS configurado para desarrollo y producción
-const corsOptions = {
-  origin: [
-    'https://elige-ser.onrender.com', // Tu frontend en producción
-    'http://localhost:5173',         // Desarrollo local
-    'http://localhost:3000',         // Desarrollo local alternativo
-    'http://localhost:4000'          // Backend local
-  ],
+// CORS más permisivo para solucionar el problema
+app.use(cors({
+  origin: true, // Permite todas las origins temporalmente
   credentials: true,
+  optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-};
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
+}));
 
-app.use(cors(corsOptions));
 app.use(express.json());
+
+// Middleware para manejar preflight requests
+app.options('*', cors());
 
 // RUTAS PÚBLICAS PRIMERO (antes de cualquier middleware de auth)
 app.get('/', (req, res) => {
