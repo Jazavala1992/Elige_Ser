@@ -1,0 +1,12 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color:rgb(231, 237, 241);
+    background-image: url('./img/index.png');
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
+    color: #333;
+  }
+
+ 

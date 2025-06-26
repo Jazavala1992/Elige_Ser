@@ -1,0 +1,116 @@
+.paciente-container {
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+    gap: 20px; 
+    padding: 20px;
+    margin: 0 auto;
+    max-width: 1200px; 
+    max-height: 1200px;
+    box-sizing: border-box;
+    
+}
+
+.paciente-header {
+    text-align: center;
+    margin-bottom: 40px; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+    background-color: #00796b;
+    min-width: 600px;
+    max-height: 65px; 
+    border-radius: 10px;
+}
+
+.cards-titulo {
+    font-size: 22px; 
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 30px; 
+    color: #ffffff; 
+    padding: 20px;
+    border-radius: 20%;
+}
+
+.paciente-card {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+
+    transition: transform 0.2s ease-in-out;
+    min-height: 300px; 
+    max-height: 400px; 
+    margin-bottom: 20px;
+    font-size: 14px; 
+    line-height: 1.1; 
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card-nombre {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #00796b;
+}
+
+.card p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #333333;
+}
+
+.card p strong {
+    color: #00796b;
+}
+
+
+.card-buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+    margin: 10px;
+}
+
+.icon {
+    font-size: 20px; /* Tamaño del ícono */
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.icon.editar {
+    color: #4caf50; /* Verde */
+}
+
+.icon.editar:hover {
+    color: #45a049;
+}
+
+.icon.eliminar {
+    color: #f44336; 
+}
+
+.icon.eliminar:hover {
+    color: #d32f2f;
+}
+
+.icon.nueva-consulta {
+    color: #2196f3; 
+}
+
+.icon.nueva-consulta:hover {
+    color: #1976d2;
+}
+
+.icon.mediciones {
+    color: #ff9800; 
+    transition: color 0.3s ease; 
+  }
+  
+  .icon.mediciones:hover {
+    color: #e65100; 
+  }

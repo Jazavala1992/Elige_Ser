@@ -1,0 +1,42 @@
+@font-face {
+    font-family: 'MiFuentePersonalizada';
+    src: url('../fonts/Whitenice.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+  }
+
+  .navbar h1 {
+    font-family: 'MiFuentePersonalizada', sans-serif;
+    text-align: left;
+    font-size: 50px;
+  }
+
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    background-color: rgb(12, 48, 70);
+    height: 100px;
+    color: white;
+    font-family: 'MiFuentePersonalizada', sans-serif;
+    margin-bottom: 20px;
+  }
+
+  .navbar img {
+    width: 60px;
+    height: 60px;
+  }
+
+  .navbar button {
+    background-color: rgb(12, 48, 70);
+    color: white;
+    border: none;
+    font-size: 25px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-left: 10px;
+    font-family: 'MiFuentePersonalizada', sans-serif;
+  }
+

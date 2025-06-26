@@ -1,0 +1,17 @@
+.titleU {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 15px 0;
+    display: flex;
+    justify-content: right;
+    padding-right: 40px;
+}
+
+.textU {
+    font-size: 15px;
+    margin: 10px 0;
+    display: flex;
+    justify-content: left;
+    padding-right: 40px;
+    padding: 10px;
+}
