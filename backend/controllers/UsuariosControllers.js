@@ -1,7 +1,6 @@
 import {pool} from "../db.js";
-import bccrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 export const registerUsuario = async (req, res) => {
   const { nombre, username, email, password } = req.body;
@@ -13,17 +12,26 @@ export const registerUsuario = async (req, res) => {
     }
 
     // Encriptar la contraseña
-    const salt = await bcrypt.genSalt(10); // Generar un salt
-    const hashedPassword = await bcrypt.hash(password, salt); // Generar el hash de la contraseña
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Guardar el usuario en la base de datos
-    const query = "INSERT INTO usuarios (nombre, username, email, password) VALUES (?, ?, ?, ?)";
-    await pool.query(query, [nombre, username, email, hashedPassword]);
+    // Usar el mismo nombre de tabla que en otras funciones (Usuarios con mayúscula)
+    const query = "INSERT INTO Usuarios (nombre, username, email, password) VALUES (?, ?, ?, ?)";
+    const [result] = await pool.query(query, [nombre, username, email, hashedPassword]);
 
-    res.status(201).json({ message: "Usuario creado exitosamente" });
+    res.status(201).json({ message: "Usuario creado exitosamente", id: result.insertId });
   } catch (error) {
     console.error("Error al crear el usuario:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    
+    // Más información específica del error
+    if (error.code === 'ER_NO_SUCH_TABLE') {
+      return res.status(500).json({ error: "La tabla Usuarios no existe" });
+    }
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(400).json({ error: "El email o username ya existe" });
+    }
+    
+    res.status(500).json({ error: "Error interno del servidor", details: error.message });
   }
 };
 
@@ -31,12 +39,10 @@ export const loginUsuario = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Validar que los campos estén presentes
     if (!email || !password) {
       return res.status(400).json({ success: false, message: "Email y contraseña son requeridos" });
     }
 
-    // Buscar el usuario por email
     const [result] = await pool.query("SELECT * FROM Usuarios WHERE email = ?", [email]);
 
     if (result.length === 0) {
@@ -45,24 +51,19 @@ export const loginUsuario = async (req, res) => {
 
     const user = result[0];
 
-    // Verificar si la contraseña está encriptada
-    const isEncrypted = user.password.startsWith("$2b$");
-    let isMatch;
-
-    if (isEncrypted) {
-      // Comparar con contraseña encriptada
-      isMatch = await bcrypt.compare(password, user.password);
-    } else {
-      // Comparar con contraseña en texto plano (para usuarios antiguos)
-      isMatch = password === user.password;
-    }
+    // Verificar contraseña
+    const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
       return res.status(401).json({ success: false, message: "Credenciales inválidas" });
     }
 
-    // Generar un token JWT
-    const token = jwt.sign({ id: user.id_usuario }, "secret_key", { expiresIn: "1h" });
+    // Usar variable de entorno para JWT secret
+    const token = jwt.sign(
+      { id: user.id_usuario }, 
+      process.env.JWT_SECRET || "secret_key", 
+      { expiresIn: "1h" }
+    );
 
     return res.status(200).json({
       success: true,
