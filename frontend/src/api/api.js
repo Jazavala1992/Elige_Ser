@@ -1,20 +1,21 @@
 import axios from 'axios';
+import config from '../config.js';
+
+const { API_BASE_URL } = config;
 
 // Apis para usuario
 export const crearUsuarioRequest = async (usuario) => {
-  return await axios.post('http://localhost:4000/register', usuario);
+  return await axios.post(`${API_BASE_URL}/register`, usuario);
 };
 
 export const loginUsuarioRequest = async ({ email, password }) => {
-  return await axios.post('http://localhost:4000/login', { email, password });
+  return await axios.post(`${API_BASE_URL}/login`, { email, password });
 };
 
-
-const token = localStorage.getItem("token"); 
 export const obtenerUsuarioRequest = async (id) => {
   const token = localStorage.getItem("token");
   console.log("Token enviado:", token);
-  return await axios.get(`http://localhost:4000/usuario/${id}`, {
+  return await axios.get(`${API_BASE_URL}/usuario/${id}`, {
       headers: {
           Authorization: `Bearer ${token}`,
       },
@@ -25,7 +26,7 @@ export const obtenerUsuarioRequest = async (id) => {
 export const obtenerPacientesRequest = async () => {
   const id = localStorage.getItem("userId");
   const token = localStorage.getItem("token");
-  const response = await axios.get(`http://localhost:4000/pacientes/${id}`, {
+  const response = await axios.get(`${API_BASE_URL}/pacientes/${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -35,7 +36,7 @@ export const obtenerPacientesRequest = async () => {
 
 export const crearPacienteRequest = async (paciente) => {
   const token = localStorage.getItem("token");
-  const response = await axios.post('http://localhost:4000/pacientes', paciente, {
+  const response = await axios.post(`${API_BASE_URL}/pacientes`, paciente, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -46,7 +47,7 @@ export const crearPacienteRequest = async (paciente) => {
 export const editPacienteRequest = async (id, paciente) => {
   try {
     const token = localStorage.getItem("token");
-    const response = await axios.put(`http://localhost:4000/pacientes/${id}`, paciente, {
+    const response = await axios.put(`${API_BASE_URL}/pacientes/${id}`, paciente, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -61,7 +62,7 @@ export const editPacienteRequest = async (id, paciente) => {
 
 export const eliminarPacienteRequest = async (id) => { 
   const token = localStorage.getItem("token");
-  const response = await axios.delete(`http://localhost:4000/pacientes/${id}`, {
+  const response = await axios.delete(`${API_BASE_URL}/pacientes/${id}`, {
     headers: {  
       Authorization: `Bearer ${token}`,
     },
@@ -69,20 +70,20 @@ export const eliminarPacienteRequest = async (id) => {
   return response;
 }
 
-
 // Api para consultas
-
 export const obtenerConsultasRequest = async (id) => {
   const token = localStorage.getItem("token");
-  const response = await axios.get(`http://localhost:4000/consultas/${id}`, {
+  const response = await axios.get(`${API_BASE_URL}/consultas/${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
   return response;
 }
+
 export const crearConsultaRequest = async (consulta) => {
-  const response = await axios.post('http://localhost:4000/consultas', consulta, {
+  const token = localStorage.getItem("token");
+  const response = await axios.post(`${API_BASE_URL}/consultas`, consulta, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -91,15 +92,13 @@ export const crearConsultaRequest = async (consulta) => {
 }
 
 // Api para mediciones
-
 export const crearMedicionesRequest = async (medicion) => {
   try {
-    const response = await axios.post("http://localhost:4000/mediciones", medicion, {
+    const response = await axios.post(`${API_BASE_URL}/mediciones`, medicion, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`, // Asegúrate de que el token esté almacenado
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
     });
-    
     return response;
   } catch (error) {
     console.error("Error al enviar la solicitud al backend:", error);
@@ -109,7 +108,7 @@ export const crearMedicionesRequest = async (medicion) => {
 
 export const obtenerMedicionesPorPacienteRequest = async (id) => {
   const token = localStorage.getItem("token");
-  return await axios.get(`http://localhost:4000/mediciones/paciente/${id}`, {
+  return await axios.get(`${API_BASE_URL}/mediciones/paciente/${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -117,12 +116,11 @@ export const obtenerMedicionesPorPacienteRequest = async (id) => {
 }
 
 // Api para resultados
-
 export const crearResultadosRequest = async (datosTransformados) => {
   try {
-    const response = await axios.post("http://localhost:4000/resultados", datosTransformados, {
+    const response = await axios.post(`${API_BASE_URL}/resultados`, datosTransformados, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`, // Asegúrate de que el token esté almacenado
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
     });
     return response;
@@ -134,7 +132,7 @@ export const crearResultadosRequest = async (datosTransformados) => {
 
 export const obtenerResultadosPorPacienteRequest = async (id) => {
   const token = localStorage.getItem("token");
-  return await axios.get(`http://localhost:4000/resultados/paciente/${id}`, {
+  return await axios.get(`${API_BASE_URL}/resultados/paciente/${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -142,11 +140,10 @@ export const obtenerResultadosPorPacienteRequest = async (id) => {
 };
 
 // Api para registro de Logs
-
 export const registrarLogRequest = async (logData) => {
   try {
     const token = localStorage.getItem("token");
-    const response = await fetch("http://localhost:4000/api/logs", {
+    const response = await fetch(`${API_BASE_URL}/api/logs`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
