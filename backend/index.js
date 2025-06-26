@@ -21,23 +21,13 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use(express.json()); // Habilita el manejo de JSON en las solicitudes
+app.use(express.json());
 
-// Rutas
-app.use(indexRoutes);
-app.use(UsuariosRoutes); 
-app.use(PacientesRoutes);
-app.use(ConsultasRoutes);
-app.use(MedicionesRoutes);
-app.use(ResultadosRoutes);
-app.use(RegistrosRoutes);
-
-// Ruta de prueba
+// RUTAS PÚBLICAS PRIMERO (antes de cualquier middleware de auth)
 app.get('/', (req, res) => {
   res.json({ message: 'ElijeSer Backend API is running!' });
 });
 
-// Ruta para probar la conexión a la base de datos
 app.get('/health', async (req, res) => {
   try {
     const [rows] = await pool.execute('SELECT 1 as test');
@@ -46,6 +36,15 @@ app.get('/health', async (req, res) => {
     res.status(500).json({ status: 'Error', error: error.message });
   }
 });
+
+// RUTAS PROTEGIDAS (después de las rutas públicas)
+app.use(indexRoutes);
+app.use(UsuariosRoutes); 
+app.use(PacientesRoutes);
+app.use(ConsultasRoutes);
+app.use(MedicionesRoutes);
+app.use(ResultadosRoutes);
+app.use(RegistrosRoutes);
 
 // Inicia el servidor
 app.listen(PORT, '0.0.0.0', () => {
