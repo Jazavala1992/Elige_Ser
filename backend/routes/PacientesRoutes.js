@@ -8,7 +8,6 @@ import {
 
 const router = Router();
 
-// Aplicar verifyToken individualmente a cada ruta (no globalmente)
 router.get('/pacientes/:id', verifyToken, getPacientes);
 router.post('/pacientes', verifyToken, createPacientes);
 router.put('/pacientes/:id', verifyToken, updatePacientes);

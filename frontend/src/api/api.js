@@ -15,7 +15,7 @@ export const loginUsuarioRequest = async ({ email, password }) => {
 export const obtenerUsuarioRequest = async (id) => {
   const token = localStorage.getItem("token");
   console.log("Token enviado:", token);
-  return await axios.get(`${API_BASE_URL}/api/user/${id}`, {
+  return await axios.get(`${API_BASE_URL}/usuario/${id}`, {
       headers: {
           Authorization: `Bearer ${token}`,
       },
