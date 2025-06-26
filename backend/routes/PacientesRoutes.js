@@ -10,8 +10,8 @@ const router = Router();
 router.use(verifyToken);
 
 router.get('/pacientes/:id', getPacientes);
-router.post('/pacientes',verifyToken, createPacientes);
+router.post('/pacientes', verifyToken, createPacientes);
 router.put('/pacientes/:id', updatePacientes);
-router.put('/pacientes/:id', deletePacientes);
+router.delete('/pacientes/:id', deletePacientes);  // ✅ Cambié PUT por DELETE
 
 export default router;

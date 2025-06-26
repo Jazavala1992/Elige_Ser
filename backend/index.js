@@ -1,6 +1,16 @@
 import express from 'express';
 import cors from 'cors';
 import { PORT } from './config.js';
+import { pool } from './db.js';
+
+// Importar rutas
+import indexRoutes from './routes/index.routes.js';
+import PacientesRoutes from './routes/PacientesRoutes.js';
+import UsuariosRoutes from './routes/UsuariosRoutes.js';
+import ConsultasRoutes from './routes/ConsultaRoutes.js';
+import MedicionesRoutes from './routes/MedicionesRoutes.js';
+import ResultadosRoutes from './routes/ResultadosRoutes.js';
+import RegistrosRoutes from './routes/RegistrosRoutes.js';
 
 const app = express();
 
@@ -20,21 +30,28 @@ app.use(cors({
 app.use(express.json());
 app.options('*', cors());
 
-// RUTAS BÁSICAS SOLAMENTE
+// RUTAS BÁSICAS
 app.get('/', (req, res) => {
   res.json({ message: 'ElijeSer Backend API is running!' });
 });
 
-app.get('/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+app.get('/health', async (req, res) => {
+  try {
+    const [rows] = await pool.execute('SELECT 1 as test');
+    res.json({ status: 'OK', database: 'Connected', timestamp: new Date().toISOString() });
+  } catch (error) {
+    res.status(500).json({ status: 'Error', error: error.message });
+  }
 });
 
-// RUTA DE REGISTRO MANUAL (sin archivos externos por ahora)
-app.post('/register', async (req, res) => {
-  res.json({ message: "Servidor funcionando - registro temporal" });
-});
-
-// SIN IMPORTAR NINGUNA RUTA EXTERNA POR AHORA
+// USAR TODAS LAS RUTAS
+app.use(indexRoutes);
+app.use(UsuariosRoutes);
+app.use(PacientesRoutes);
+app.use(ConsultasRoutes);
+app.use(MedicionesRoutes);
+app.use(ResultadosRoutes);
+app.use(RegistrosRoutes);
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
