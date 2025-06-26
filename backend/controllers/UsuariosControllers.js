@@ -6,10 +6,17 @@ export const registerUsuario = async (req, res) => {
   const { nombre, username, email, password } = req.body;
 
   try {
+    console.log("Datos recibidos:", { nombre, username, email, password: "***" });
+    
     // Verificar que todos los campos estén presentes
     if (!nombre || !username || !email || !password) {
       return res.status(400).json({ error: "Todos los campos son obligatorios" });
     }
+
+    // Verificar conexión a la base de datos
+    console.log("Probando conexión a la base de datos...");
+    const [testResult] = await pool.query('SELECT 1 as test');
+    console.log("Conexión OK:", testResult);
 
     // Encriptar la contraseña
     const salt = await bcrypt.genSalt(10);
@@ -17,11 +24,18 @@ export const registerUsuario = async (req, res) => {
 
     // Usar el mismo nombre de tabla que en otras funciones (Usuarios con mayúscula)
     const query = "INSERT INTO Usuarios (nombre, username, email, password) VALUES (?, ?, ?, ?)";
+    console.log("Ejecutando query:", query);
+    console.log("Con valores:", [nombre, username, email, "***"]);
+    
     const [result] = await pool.query(query, [nombre, username, email, hashedPassword]);
 
+    console.log("Usuario creado exitosamente:", result.insertId);
     res.status(201).json({ message: "Usuario creado exitosamente", id: result.insertId });
   } catch (error) {
-    console.error("Error al crear el usuario:", error);
+    console.error("Error completo al crear el usuario:", error);
+    console.error("Error code:", error.code);
+    console.error("Error message:", error.message);
+    console.error("Error stack:", error.stack);
     
     // Más información específica del error
     if (error.code === 'ER_NO_SUCH_TABLE') {
