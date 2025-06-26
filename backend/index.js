@@ -12,21 +12,25 @@ import { pool } from './db.js';
 
 const app = express();
 
-// CORS más permisivo para solucionar el problema
+// CORS más permisivo
 app.use(cors({
-  origin: true, // Permite todas las origins temporalmente
+  origin: [
+    'https://elige-ser.onrender.com',
+    'http://localhost:5173',
+    'http://localhost:3000'
+  ],
   credentials: true,
-  optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200
 }));
 
 app.use(express.json());
 
-// Middleware para manejar preflight requests
+// Manejar preflight requests
 app.options('*', cors());
 
-// RUTAS PÚBLICAS PRIMERO (antes de cualquier middleware de auth)
+// RUTAS
 app.get('/', (req, res) => {
   res.json({ message: 'ElijeSer Backend API is running!' });
 });
@@ -40,16 +44,14 @@ app.get('/health', async (req, res) => {
   }
 });
 
-// RUTAS PROTEGIDAS (después de las rutas públicas)
 app.use(indexRoutes);
-app.use(UsuariosRoutes); 
+app.use(UsuariosRoutes);
 app.use(PacientesRoutes);
 app.use(ConsultasRoutes);
 app.use(MedicionesRoutes);
 app.use(ResultadosRoutes);
 app.use(RegistrosRoutes);
 
-// Inicia el servidor
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });
