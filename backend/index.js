@@ -1,7 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import { PORT } from './config.js';
-import { pool } from './db.js';
 
 const app = express();
 
@@ -21,44 +20,28 @@ app.use(cors({
 app.use(express.json());
 app.options('*', cors());
 
-// RUTAS BÁSICAS DIRECTAS (sin archivos externos)
+// RUTAS BÁSICAS SIN BASE DE DATOS
 app.get('/', (req, res) => {
   res.json({ message: 'ElijeSer Backend API is running!' });
 });
 
-app.get('/health', async (req, res) => {
-  try {
-    const [rows] = await pool.execute('SELECT 1 as test');
-    res.json({ status: 'OK', database: 'Connected', timestamp: new Date().toISOString() });
-  } catch (error) {
-    res.status(500).json({ status: 'Error', error: error.message });
-  }
+app.get('/health', (req, res) => {
+  res.json({ status: 'OK - No DB', timestamp: new Date().toISOString() });
 });
 
-app.get('/ping', async (req, res) => {
-  try {
-    const [rows] = await pool.query('SELECT 1 + 1 AS solution');
-    res.json(rows);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+app.get('/ping', (req, res) => {
+  res.json({ ping: 'pong', timestamp: new Date().toISOString() });
 });
 
 // RUTA DE REGISTRO TEMPORAL
-app.post('/register', async (req, res) => {
+app.post('/register', (req, res) => {
   const { nombre, username, email, password } = req.body;
   
-  try {
-    res.status(201).json({ 
-      message: "Usuario creado exitosamente (temporal)", 
-      data: { nombre, username, email } 
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  res.status(201).json({ 
+    message: "Usuario creado exitosamente (temporal)", 
+    data: { nombre, username, email } 
+  });
 });
-
-// NO IMPORTAR NINGUNA RUTA EXTERNA
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
