@@ -5,6 +5,15 @@ import { pool } from './db.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
+// IMPORTAR TODAS LAS RUTAS
+import indexRoutes from './routes/index.routes.js';
+import usuariosRoutes from './routes/UsuariosRoutes.js';
+import pacientesRoutes from './routes/PacientesRoutes.js';
+import consultaRoutes from './routes/ConsultaRoutes.js';
+import medicionesRoutes from './routes/MedicionesRoutes.js';
+import resultadosRoutes from './routes/ResultadosRoutes.js';
+import registrosRoutes from './routes/RegistrosRoutes.js';
+
 const app = express();
 
 // CORS
@@ -23,135 +32,22 @@ app.use(cors({
 app.use(express.json());
 app.options('*', cors());
 
-// RUTAS BÁSICAS
+// USAR TODAS LAS RUTAS
+app.use('/', indexRoutes);
+app.use('/', usuariosRoutes);
+app.use('/', pacientesRoutes);
+app.use('/', consultaRoutes);
+app.use('/', medicionesRoutes);
+app.use('/', resultadosRoutes);
+app.use('/', registrosRoutes);
+
+// RUTAS BÁSICAS (mantener estas como backup)
 app.get('/', (req, res) => {
   res.json({ message: 'ElijeSer Backend API is running!' });
 });
 
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
-});
-
-app.get('/ping', (req, res) => {
-  res.json({ ping: 'pong', timestamp: new Date().toISOString() });
-});
-
-// REGISTRO
-app.post('/register', async (req, res) => {
-  const { nombre, username, email, password } = req.body;
-  let connection;
-  
-  try {
-    if (!nombre || !username || !email || !password) {
-      return res.status(400).json({ error: "Todos los campos son obligatorios" });
-    }
-
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    connection = await pool.getConnection();
-    const query = "INSERT INTO Usuarios (nombre, username, email, password) VALUES (?, ?, ?, ?)";
-    const [result] = await connection.query(query, [nombre, username, email, hashedPassword]);
-
-    res.status(201).json({ 
-      message: "Usuario creado exitosamente", 
-      id: result.insertId
-    });
-  } catch (error) {
-    console.error("Error en registro:", error);
-    
-    if (error.code === 'ER_DUP_ENTRY') {
-      return res.status(400).json({ error: "El email ya existe" });
-    }
-    
-    res.status(500).json({ error: "Error interno del servidor" });
-  } finally {
-    if (connection) connection.release();
-  }
-});
-
-// LOGIN
-app.post('/login', async (req, res) => {
-  let connection;
-  try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ success: false, message: "Email y contraseña son requeridos" });
-    }
-
-    connection = await pool.getConnection();
-    const [result] = await connection.query("SELECT * FROM Usuarios WHERE email = ?", [email]);
-
-    if (result.length === 0) {
-      return res.status(401).json({ success: false, message: "Credenciales inválidas" });
-    }
-
-    const user = result[0];
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
-      return res.status(401).json({ success: false, message: "Credenciales inválidas" });
-    }
-
-    const token = jwt.sign(
-      { id: user.id_usuario, email: user.email },
-      process.env.JWT_SECRET || 'mi-super-secreto-jwt-2024',
-      { expiresIn: '24h' }
-    );
-
-    res.json({
-      success: true,
-      message: "Login exitoso",
-      token,
-      user: {
-        id: user.id_usuario,
-        nombre: user.nombre,
-        username: user.username,
-        email: user.email
-      }
-    });
-  } catch (error) {
-    console.error("Error en login:", error);
-    res.status(500).json({ success: false, message: "Error interno del servidor" });
-  } finally {
-    if (connection) connection.release();
-  }
-});
-
-// OBTENER USUARIO POR ID
-app.get('/usuario/:id', async (req, res) => {
-  let connection;
-  try {
-    const { id } = req.params;
-
-    connection = await pool.getConnection();
-    const [result] = await connection.query(
-      "SELECT id_usuario, nombre, username, email FROM Usuarios WHERE id_usuario = ?", 
-      [id]
-    );
-
-    if (result.length === 0) {
-      return res.status(404).json({ success: false, message: "Usuario no encontrado" });
-    }
-
-    const user = result[0];
-    
-    res.json({
-      success: true,
-      user: {
-        id: user.id_usuario,
-        nombre: user.nombre,
-        username: user.username,
-        email: user.email
-      }
-    });
-  } catch (error) {
-    console.error("Error al obtener usuario:", error);
-    res.status(500).json({ success: false, message: "Error interno del servidor" });
-  } finally {
-    if (connection) connection.release();
-  }
 });
 
 // HEALTH DB
@@ -172,77 +68,6 @@ app.get('/health/db', async (req, res) => {
   } catch (error) {
     console.error('Database health check error:', error);
     res.status(500).json({ status: 'Error', error: error.message });
-  } finally {
-    if (connection) connection.release();
-  }
-});
-
-// Endpoint alternativo que funciona
-app.get('/api/user/:id', async (req, res) => {
-  let connection;
-  try {
-    const { id } = req.params;
-    console.log('Obteniendo usuario ID:', id);
-
-    connection = await pool.getConnection();
-    const [result] = await connection.query(
-      "SELECT id_usuario, nombre, username, email FROM Usuarios WHERE id_usuario = ?", 
-      [id]
-    );
-
-    if (result.length === 0) {
-      return res.status(404).json({ success: false, message: "Usuario no encontrado" });
-    }
-
-    const user = result[0];
-    
-    res.json({
-      success: true,
-      user: {
-        id: user.id_usuario,
-        nombre: user.nombre,
-        username: user.username,
-        email: user.email
-      }
-    });
-  } catch (error) {
-    console.error("Error al obtener usuario:", error);
-    res.status(500).json({ success: false, message: "Error interno del servidor" });
-  } finally {
-    if (connection) connection.release();
-  }
-});
-
-// Mantener el endpoint original también
-app.get('/user/:id', async (req, res) => {
-  let connection;
-  try {
-    const { id } = req.params;
-
-    connection = await pool.getConnection();
-    const [result] = await connection.query(
-      "SELECT id_usuario, nombre, username, email FROM Usuarios WHERE id_usuario = ?", 
-      [id]
-    );
-
-    if (result.length === 0) {
-      return res.status(404).json({ success: false, message: "Usuario no encontrado" });
-    }
-
-    const user = result[0];
-    
-    res.json({
-      success: true,
-      user: {
-        id: user.id_usuario,
-        nombre: user.nombre,
-        username: user.username,
-        email: user.email
-      }
-    });
-  } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ success: false, message: "Error interno del servidor" });
   } finally {
     if (connection) connection.release();
   }
