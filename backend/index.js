@@ -1,18 +1,11 @@
 import express from 'express';
 import cors from 'cors';
 import { PORT } from './config.js';
-import indexRoutes from './routes/index.routes.js';
-import PacientesRoutes from './routes/PacientesRoutes.js';
-import UsuariosRoutes from './routes/UsuariosRoutes.js';
-import ConsultasRoutes from './routes/ConsultaRoutes.js';
-import MedicionesRoutes from './routes/MedicionesRoutes.js';
-import ResultadosRoutes from './routes/ResultadosRoutes.js';
-import RegistrosRoutes from './routes/RegistrosRoutes.js';
 import { pool } from './db.js';
 
 const app = express();
 
-// CORS más permisivo
+// CORS
 app.use(cors({
   origin: [
     'https://elige-ser.onrender.com',
@@ -26,11 +19,9 @@ app.use(cors({
 }));
 
 app.use(express.json());
-
-// Manejar preflight requests
 app.options('*', cors());
 
-// RUTAS
+// RUTAS BÁSICAS PRIMERO
 app.get('/', (req, res) => {
   res.json({ message: 'ElijeSer Backend API is running!' });
 });
@@ -44,13 +35,25 @@ app.get('/health', async (req, res) => {
   }
 });
 
-app.use(indexRoutes);
-app.use(UsuariosRoutes);
-app.use(PacientesRoutes);
-app.use(ConsultasRoutes);
-app.use(MedicionesRoutes);
-app.use(ResultadosRoutes);
-app.use(RegistrosRoutes);
+// IMPORTAR RUTAS UNA POR UNA PARA IDENTIFICAR EL PROBLEMA
+try {
+  console.log('Importando UsuariosRoutes...');
+  const UsuariosRoutes = await import('./routes/UsuariosRoutes.js');
+  app.use(UsuariosRoutes.default);
+  console.log('✅ UsuariosRoutes importado exitosamente');
+} catch (error) {
+  console.error('❌ Error importando UsuariosRoutes:', error);
+}
+
+// Comentar las demás rutas temporalmente
+/*
+try {
+  const indexRoutes = await import('./routes/index.routes.js');
+  app.use(indexRoutes.default);
+} catch (error) {
+  console.error('❌ Error importando index.routes:', error);
+}
+*/
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);

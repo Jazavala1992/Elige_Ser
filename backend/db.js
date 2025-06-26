@@ -6,14 +6,10 @@ export const pool = mysql.createPool({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   port: process.env.DB_PORT,
-  // Configuración para Clever Cloud (límite de 5 conexiones)
-  connectionLimit: 3,        // Máximo 3 conexiones concurrentes
-  acquireTimeout: 60000,     // Tiempo de espera para obtener conexión
-  timeout: 60000,            // Timeout general
-  reconnect: true,           // Reconnectar automáticamente
-  idleTimeout: 300000,       // Cerrar conexiones inactivas después de 5 min
-  // Configuración adicional para production
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  // Solo opciones válidas para MySQL2
+  connectionLimit: 3,
+  waitForConnections: true,
+  queueLimit: 0
 });
 
 // Función para probar la conexión
