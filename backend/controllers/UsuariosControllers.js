@@ -85,14 +85,31 @@ export const loginUsuario = async (req, res) => {
 
 export const getUsuario = async (req, res) => {
     try {
-        const [result] = await pool.query('SELECT * FROM Usuarios WHERE id_usuario = ? AND activo = TRUE', [req.params.id_usuario]);
+        const [result] = await pool.query('SELECT id_usuario, nombre, username, email FROM Usuarios WHERE id_usuario = ?', [req.params.id]);
+        
         if (result.length === 0) {
-            return res.status(404).json({ message: 'Usuario no encontrado' });
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Usuario no encontrado' 
+            });
         }
-        res.json(result[0]);
+        
+        res.json({
+            success: true,
+            user: {
+                id: result[0].id_usuario,
+                nombre: result[0].nombre,
+                username: result[0].username,
+                email: result[0].email
+            }
+        });
     } catch (error) {
         console.error("Error en el servidor:", error);
-        res.status(500).json({ message: 'Error interno del servidor', error: error.message });
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error interno del servidor', 
+            error: error.message 
+        });
     }
 };
 
