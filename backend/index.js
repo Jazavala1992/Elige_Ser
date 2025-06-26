@@ -28,13 +28,8 @@ app.get('/', (req, res) => {
   res.json({ message: 'ElijeSer Backend API is running!' });
 });
 
-app.get('/health', async (req, res) => {
-  try {
-    const [rows] = await pool.execute('SELECT 1 as test');
-    res.json({ status: 'OK', database: 'Connected', timestamp: new Date().toISOString() });
-  } catch (error) {
-    res.status(500).json({ status: 'Error', error: error.message });
-  }
+app.get('/health', (req, res) => {
+  res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
 app.get('/ping', (req, res) => {
@@ -113,6 +108,16 @@ app.post('/login', async (req, res) => {
   } catch (error) {
     console.error("Error en login:", error);
     res.status(500).json({ success: false, message: "Error interno del servidor" });
+  }
+});
+
+// Nueva ruta para verificar la conexión a la base de datos
+app.get('/health/db', async (req, res) => {
+  try {
+    const [rows] = await pool.execute('SELECT 1 as test');
+    res.json({ status: 'OK', database: 'Connected', timestamp: new Date().toISOString() });
+  } catch (error) {
+    res.status(500).json({ status: 'Error', error: error.message });
   }
 });
 

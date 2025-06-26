@@ -6,8 +6,10 @@ export const pool = mysql.createPool({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   port: process.env.DB_PORT,
-  connectionLimit: 3,
+  connectionLimit: 2,        // Reducir a 2 conexiones
   waitForConnections: true,
-  queueLimit: 0
+  queueLimit: 0,
+  idleTimeout: 60000,       // Cerrar conexiones inactivas después de 1 minuto
+  acquireTimeout: 60000     // Timeout para obtener conexión
 });
 
