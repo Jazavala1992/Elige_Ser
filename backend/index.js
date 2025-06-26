@@ -3,9 +3,6 @@ import cors from 'cors';
 import { PORT } from './config.js';
 import { pool } from './db.js';
 
-// SOLO IMPORTAR indexRoutes PRIMERO
-import indexRoutes from './routes/index.routes.js';
-
 const app = express();
 
 // CORS
@@ -24,7 +21,7 @@ app.use(cors({
 app.use(express.json());
 app.options('*', cors());
 
-// RUTAS BÁSICAS
+// RUTAS BÁSICAS DIRECTAS (sin archivos externos)
 app.get('/', (req, res) => {
   res.json({ message: 'ElijeSer Backend API is running!' });
 });
@@ -35,6 +32,15 @@ app.get('/health', async (req, res) => {
     res.json({ status: 'OK', database: 'Connected', timestamp: new Date().toISOString() });
   } catch (error) {
     res.status(500).json({ status: 'Error', error: error.message });
+  }
+});
+
+app.get('/ping', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT 1 + 1 AS solution');
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -52,8 +58,7 @@ app.post('/register', async (req, res) => {
   }
 });
 
-// SOLO USAR indexRoutes
-app.use(indexRoutes);
+// NO IMPORTAR NINGUNA RUTA EXTERNA
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
