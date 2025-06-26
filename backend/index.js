@@ -1,7 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import { PORT } from './config.js';
-import { pool } from './db.js';
 
 const app = express();
 
@@ -21,39 +20,21 @@ app.use(cors({
 app.use(express.json());
 app.options('*', cors());
 
-// RUTAS BÁSICAS PRIMERO
+// RUTAS BÁSICAS SOLAMENTE
 app.get('/', (req, res) => {
   res.json({ message: 'ElijeSer Backend API is running!' });
 });
 
-app.get('/health', async (req, res) => {
-  try {
-    const [rows] = await pool.execute('SELECT 1 as test');
-    res.json({ status: 'OK', database: 'Connected', timestamp: new Date().toISOString() });
-  } catch (error) {
-    res.status(500).json({ status: 'Error', error: error.message });
-  }
+app.get('/health', (req, res) => {
+  res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-// IMPORTAR RUTAS UNA POR UNA PARA IDENTIFICAR EL PROBLEMA
-try {
-  console.log('Importando UsuariosRoutes...');
-  const UsuariosRoutes = await import('./routes/UsuariosRoutes.js');
-  app.use(UsuariosRoutes.default);
-  console.log('✅ UsuariosRoutes importado exitosamente');
-} catch (error) {
-  console.error('❌ Error importando UsuariosRoutes:', error);
-}
+// RUTA DE REGISTRO MANUAL (sin archivos externos por ahora)
+app.post('/register', async (req, res) => {
+  res.json({ message: "Servidor funcionando - registro temporal" });
+});
 
-// Comentar las demás rutas temporalmente
-/*
-try {
-  const indexRoutes = await import('./routes/index.routes.js');
-  app.use(indexRoutes.default);
-} catch (error) {
-  console.error('❌ Error importando index.routes:', error);
-}
-*/
+// SIN IMPORTAR NINGUNA RUTA EXTERNA POR AHORA
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
