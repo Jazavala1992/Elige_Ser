@@ -177,6 +177,77 @@ app.get('/health/db', async (req, res) => {
   }
 });
 
+// Endpoint alternativo que funciona
+app.get('/api/user/:id', async (req, res) => {
+  let connection;
+  try {
+    const { id } = req.params;
+    console.log('Obteniendo usuario ID:', id);
+
+    connection = await pool.getConnection();
+    const [result] = await connection.query(
+      "SELECT id_usuario, nombre, username, email FROM Usuarios WHERE id_usuario = ?", 
+      [id]
+    );
+
+    if (result.length === 0) {
+      return res.status(404).json({ success: false, message: "Usuario no encontrado" });
+    }
+
+    const user = result[0];
+    
+    res.json({
+      success: true,
+      user: {
+        id: user.id_usuario,
+        nombre: user.nombre,
+        username: user.username,
+        email: user.email
+      }
+    });
+  } catch (error) {
+    console.error("Error al obtener usuario:", error);
+    res.status(500).json({ success: false, message: "Error interno del servidor" });
+  } finally {
+    if (connection) connection.release();
+  }
+});
+
+// Mantener el endpoint original también
+app.get('/user/:id', async (req, res) => {
+  let connection;
+  try {
+    const { id } = req.params;
+
+    connection = await pool.getConnection();
+    const [result] = await connection.query(
+      "SELECT id_usuario, nombre, username, email FROM Usuarios WHERE id_usuario = ?", 
+      [id]
+    );
+
+    if (result.length === 0) {
+      return res.status(404).json({ success: false, message: "Usuario no encontrado" });
+    }
+
+    const user = result[0];
+    
+    res.json({
+      success: true,
+      user: {
+        id: user.id_usuario,
+        nombre: user.nombre,
+        username: user.username,
+        email: user.email
+      }
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ success: false, message: "Error interno del servidor" });
+  } finally {
+    if (connection) connection.release();
+  }
+});
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });
