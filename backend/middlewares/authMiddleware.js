@@ -8,8 +8,9 @@ export const verifyToken = (req, res, next) => {
     }
 
     try {
-        const decoded = jwt.verify(token, "secret_key"); // Verifica el token
-        req.userId = decoded.id_usuario; // Aquí no necesitas cambiar nada, ya que el token contiene `id_usuario` como `id`
+        // Usar el mismo secret que en UsuariosControllers.js
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret_key"); // Verifica el token
+        req.userId = decoded.id; // El token contiene 'id'
         next(); // Continúa con la siguiente función
     } catch (error) {
         return res.status(401).json({ message: "Token inválido o expirado" });

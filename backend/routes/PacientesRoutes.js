@@ -7,11 +7,11 @@ import {
     deletePacientes} from '../controllers/PacienteControllers.js';   
 
 const router = Router();
-router.use(verifyToken);
 
-router.get('/pacientes/:id', getPacientes);
+// Aplicar verifyToken individualmente a cada ruta (no globalmente)
+router.get('/pacientes/:id', verifyToken, getPacientes);
 router.post('/pacientes', verifyToken, createPacientes);
-router.put('/pacientes/:id', updatePacientes);
-router.delete('/pacientes/:id', deletePacientes);  // ✅ Cambié PUT por DELETE
+router.put('/pacientes/:id', verifyToken, updatePacientes);
+router.delete('/pacientes/:id', verifyToken, deletePacientes);  
 
 export default router;
