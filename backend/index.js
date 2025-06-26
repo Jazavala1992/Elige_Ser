@@ -3,6 +3,9 @@ import cors from 'cors';
 import { PORT } from './config.js';
 import { pool } from './db.js';
 
+// SOLO IMPORTAR indexRoutes PRIMERO
+import indexRoutes from './routes/index.routes.js';
+
 const app = express();
 
 // CORS
@@ -35,44 +38,22 @@ app.get('/health', async (req, res) => {
   }
 });
 
-// IMPORTAR RUTAS UNA POR UNA PARA DETECTAR EL PROBLEMA
-console.log('Importando indexRoutes...');
-import indexRoutes from './routes/index.routes.js';
+// RUTA DE REGISTRO TEMPORAL
+app.post('/register', async (req, res) => {
+  const { nombre, username, email, password } = req.body;
+  
+  try {
+    res.status(201).json({ 
+      message: "Usuario creado exitosamente (temporal)", 
+      data: { nombre, username, email } 
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// SOLO USAR indexRoutes
 app.use(indexRoutes);
-console.log('✅ indexRoutes importado');
-
-console.log('Importando UsuariosRoutes...');
-import UsuariosRoutes from './routes/UsuariosRoutes.js';
-app.use(UsuariosRoutes);
-console.log('✅ UsuariosRoutes importado');
-
-// Comentar las demás rutas temporalmente para probar
-/*
-console.log('Importando PacientesRoutes...');
-import PacientesRoutes from './routes/PacientesRoutes.js';
-app.use(PacientesRoutes);
-console.log('✅ PacientesRoutes importado');
-
-console.log('Importando ConsultasRoutes...');
-import ConsultasRoutes from './routes/ConsultaRoutes.js';
-app.use(ConsultasRoutes);
-console.log('✅ ConsultasRoutes importado');
-
-console.log('Importando MedicionesRoutes...');
-import MedicionesRoutes from './routes/MedicionesRoutes.js';
-app.use(MedicionesRoutes);
-console.log('✅ MedicionesRoutes importado');
-
-console.log('Importando ResultadosRoutes...');
-import ResultadosRoutes from './routes/ResultadosRoutes.js';
-app.use(ResultadosRoutes);
-console.log('✅ ResultadosRoutes importado');
-
-console.log('Importando RegistrosRoutes...');
-import RegistrosRoutes from './routes/RegistrosRoutes.js';
-app.use(RegistrosRoutes);
-console.log('✅ RegistrosRoutes importado');
-*/
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
