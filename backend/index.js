@@ -36,9 +36,10 @@ app.get('/ping', (req, res) => {
   res.json({ ping: 'pong', timestamp: new Date().toISOString() });
 });
 
-// RUTA DE REGISTRO CON BASE DE DATOS
+// Actualizar la ruta de REGISTRO:
 app.post('/register', async (req, res) => {
   const { nombre, username, email, password } = req.body;
+  let connection;
   
   try {
     if (!nombre || !username || !email || !password) {
@@ -48,8 +49,9 @@ app.post('/register', async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    connection = await pool.getConnection();
     const query = "INSERT INTO Usuarios (nombre, username, email, password) VALUES (?, ?, ?, ?)";
-    const [result] = await pool.query(query, [nombre, username, email, hashedPassword]);
+    const [result] = await connection.query(query, [nombre, username, email, hashedPassword]);
 
     res.status(201).json({ message: "Usuario creado exitosamente", id: result.insertId });
   } catch (error) {
@@ -60,11 +62,14 @@ app.post('/register', async (req, res) => {
     }
     
     res.status(500).json({ error: "Error interno del servidor" });
+  } finally {
+    if (connection) connection.release();
   }
 });
 
-// RUTA DE LOGIN
+// Actualizar la ruta de LOGIN:
 app.post('/login', async (req, res) => {
+  let connection;
   try {
     const { email, password } = req.body;
 
@@ -72,7 +77,8 @@ app.post('/login', async (req, res) => {
       return res.status(400).json({ success: false, message: "Email y contraseña son requeridos" });
     }
 
-    const [result] = await pool.query("SELECT * FROM Usuarios WHERE email = ?", [email]);
+    connection = await pool.getConnection();
+    const [result] = await connection.query("SELECT * FROM Usuarios WHERE email = ?", [email]);
 
     if (result.length === 0) {
       return res.status(401).json({ success: false, message: "Credenciales inválidas" });
@@ -108,6 +114,8 @@ app.post('/login', async (req, res) => {
   } catch (error) {
     console.error("Error en login:", error);
     res.status(500).json({ success: false, message: "Error interno del servidor" });
+  } finally {
+    if (connection) connection.release();
   }
 });
 
