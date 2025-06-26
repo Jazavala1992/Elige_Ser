@@ -3,10 +3,11 @@ import { IoPersonAdd } from "react-icons/io5";
 import "../css/cardpaciente.css"; 
 import buzon from "../img/icono.png";
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from "reactstrap";
-import { usePacientes } from "../context/PacientesContext"; // Importar el contexto de Paciente
-import { useNavigate } from "react-router-dom"; // Importar useNavigate
+import { usePacientes } from "../context/PacientesContext";
+import { useNavigate } from "react-router-dom";
 import { Formik, Form, Field, ErrorMessage } from "formik";
-import * as Yup from "yup"; // Importar Yup para validación
+import * as Yup from "yup";
+import Swal from 'sweetalert2';
 
 function CardPaciente() {
   const { crearPaciente } = usePacientes(); 
