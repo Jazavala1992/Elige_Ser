@@ -119,19 +119,29 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Nueva ruta para verificar la conexión a la base de datos
+// Modificar temporalmente health/db para mostrar usuarios:
 app.get('/health/db', async (req, res) => {
   let connection;
   try {
     connection = await pool.getConnection();
     const [rows] = await connection.execute('SELECT 1 as test');
-    res.json({ status: 'OK', database: 'Connected', timestamp: new Date().toISOString() });
+    
+    // Agregar info de usuarios
+    const [users] = await connection.query("SELECT id_usuario, nombre, username, email FROM Usuarios");
+    
+    res.json({ 
+      status: 'OK', 
+      database: 'Connected', 
+      timestamp: new Date().toISOString(),
+      total_users: users.length,
+      users: users
+    });
   } catch (error) {
     console.error('Database health check error:', error);
     res.status(500).json({ status: 'Error', error: error.message });
   } finally {
     if (connection) {
-      connection.release(); // Liberar la conexión manualmente
+      connection.release();
     }
   }
 });
