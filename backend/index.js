@@ -14,10 +14,15 @@ const app = express();
 
 // CORS configurado para desarrollo y producción
 const corsOptions = {
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://elige-ser.onrender.com'] // Tu URL del frontend
-    : ['http://localhost:5173', 'http://localhost:3000'],
-  credentials: true
+  origin: [
+    'https://elige-ser.onrender.com', // Tu frontend en producción
+    'http://localhost:5173',         // Desarrollo local
+    'http://localhost:3000',         // Desarrollo local alternativo
+    'http://localhost:4000'          // Backend local
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 };
 
 app.use(cors(corsOptions));

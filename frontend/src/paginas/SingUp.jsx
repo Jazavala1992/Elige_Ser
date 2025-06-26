@@ -5,6 +5,7 @@ import { NavItem, Nav } from 'reactstrap';
 import { useUsuarios } from '../context/UsuarioContext.jsx';
 import {Form, Formik} from "formik";
 import React, { useState } from "react";
+import Swal from 'sweetalert2';
 
 function SignUp() {
   const { crearUsuario } = useUsuarios();
@@ -61,7 +62,12 @@ function SignUp() {
                 onSubmit={async (values, actions) => {
                   try {
                     await crearUsuario(values);
-                    console.log("Datos del usuario:", values);
+                    await Swal.fire({
+                      icon: 'success',
+                      title: 'Usuario creado',
+                      text: 'El usuario se ha creado exitosamente.',
+                      confirmButtonText: 'Aceptar'
+                    });
                     actions.resetForm();
                     window.location.href = "/";
                   } catch (error) {
