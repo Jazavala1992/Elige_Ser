@@ -146,6 +146,46 @@ app.post('/login', async (req, res) => {
   }
 });
 
+// Endpoint para obtener usuario por ID
+app.get('/usuario/:id', async (req, res) => {
+  let connection;
+  try {
+    const { id } = req.params;
+    console.log('Obteniendo usuario con ID:', id);
+
+    if (!id) {
+      return res.status(400).json({ success: false, message: "ID de usuario requerido" });
+    }
+
+    connection = await pool.getConnection();
+    const [result] = await connection.query(
+      "SELECT id_usuario, nombre, username, email FROM Usuarios WHERE id_usuario = ?", 
+      [id]
+    );
+
+    if (result.length === 0) {
+      return res.status(404).json({ success: false, message: "Usuario no encontrado" });
+    }
+
+    const user = result[0];
+    
+    res.json({
+      success: true,
+      user: {
+        id: user.id_usuario,
+        nombre: user.nombre,
+        username: user.username,
+        email: user.email
+      }
+    });
+  } catch (error) {
+    console.error("Error al obtener usuario:", error);
+    res.status(500).json({ success: false, message: "Error interno del servidor" });
+  } finally {
+    if (connection) connection.release();
+  }
+});
+
 // Modificar temporalmente health/db para mostrar usuarios:
 app.get('/health/db', async (req, res) => {
   let connection;
