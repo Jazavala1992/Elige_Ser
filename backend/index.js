@@ -11,7 +11,16 @@ import RegistrosRoutes from './routes/RegistrosRoutes.js';
 import { pool } from './db.js';
 
 const app = express();
-app.use(cors({ origin: 'http://localhost:5173' })); // Habilita CORS para el frontend
+
+// CORS configurado para desarrollo y producción
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://elige-ser.onrender.com'] // Tu URL del frontend
+    : ['http://localhost:5173', 'http://localhost:3000'],
+  credentials: true
+};
+
+app.use(cors(corsOptions));
 app.use(express.json()); // Habilita el manejo de JSON en las solicitudes
 
 // Rutas
