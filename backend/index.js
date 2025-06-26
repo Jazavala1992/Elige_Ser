@@ -8,6 +8,7 @@ import ConsultasRoutes from './routes/ConsultaRoutes.js';
 import MedicionesRoutes from './routes/MedicionesRoutes.js';
 import ResultadosRoutes from './routes/ResultadosRoutes.js';
 import RegistrosRoutes from './routes/RegistrosRoutes.js';
+import { pool } from './db.js';
 
 const app = express();
 app.use(cors({ origin: 'http://localhost:5173' })); // Habilita CORS para el frontend
@@ -22,7 +23,22 @@ app.use(MedicionesRoutes);
 app.use(ResultadosRoutes);
 app.use(RegistrosRoutes);
 
+// Ruta de prueba
+app.get('/', (req, res) => {
+  res.json({ message: 'ElijeSer Backend API is running!' });
+});
+
+// Ruta para probar la conexión a la base de datos
+app.get('/health', async (req, res) => {
+  try {
+    const [rows] = await pool.execute('SELECT 1 as test');
+    res.json({ status: 'OK', database: 'Connected', timestamp: new Date().toISOString() });
+  } catch (error) {
+    res.status(500).json({ status: 'Error', error: error.message });
+  }
+});
 
 // Inicia el servidor
-app.listen(PORT);
-console.log(`Server is running on port ${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT}`);
+});
