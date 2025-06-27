@@ -29,7 +29,7 @@ export class PacienteService {
       id_usuario: parseInt(data.id_usuario),
       nombre: data.nombre?.trim(),
       fecha_nacimiento: data.fecha_nacimiento,
-      sexo: data.sexo?.toUpperCase(),
+      sexo: data.sexo?.trim(), // No convertir a mayúsculas para permitir "Otro"
       telefono: data.telefono?.trim(),
       ocupacion: data.ocupacion?.trim(),
       nivel_actividad: data.nivel_actividad?.trim(),
