@@ -55,6 +55,30 @@ router.post("/login",
   loginUsuario
 );
 
+// Debug endpoint público para verificar el estado del rate limiting
+router.get("/debug/rate-limit-status", (req, res) => {
+  const rateLimitInfo = req.rateLimit || {};
+  
+  res.json({
+    debug: true,
+    message: "Estado del rate limiting",
+    environment: process.env.NODE_ENV || 'development',
+    isProduction: process.env.NODE_ENV === 'production',
+    ip: req.ip,
+    rateLimitSettings: {
+      authLimiter: {
+        windowMs: isProduction ? "15 min" : "5 min",
+        maxAttempts: isProduction ? 5 : 50,
+        production: isProduction
+      }
+    },
+    currentLimits: rateLimitInfo,
+    recommendation: isProduction ? 
+      "En producción: límites estrictos aplicados" : 
+      "En desarrollo: límites relajados para testing"
+  });
+});
+
 // Rutas protegidas
 router.get("/usuario/:id", 
   sanitizeInput,
@@ -148,29 +172,5 @@ router.get("/debug/usuario/:id",
     }
   }
 );
-
-// Debug endpoint para verificar el estado del rate limiting
-router.get("/debug/rate-limit-status", (req, res) => {
-  const rateLimitInfo = req.rateLimit || {};
-  
-  res.json({
-    debug: true,
-    message: "Estado del rate limiting",
-    environment: process.env.NODE_ENV || 'development',
-    isProduction: process.env.NODE_ENV === 'production',
-    ip: req.ip,
-    rateLimitSettings: {
-      authLimiter: {
-        windowMs: isProduction ? "15 min" : "5 min",
-        maxAttempts: isProduction ? 5 : 50,
-        production: isProduction
-      }
-    },
-    currentLimits: rateLimitInfo,
-    recommendation: isProduction ? 
-      "En producción: límites estrictos aplicados" : 
-      "En desarrollo: límites relajados para testing"
-  });
-});
 
 export default router;
