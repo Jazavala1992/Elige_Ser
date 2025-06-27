@@ -274,6 +274,43 @@ docker-compose up -d --scale backend=3
 - 🟢 **Error 500 de login completamente resuelto**
 - 🟢 **Endpoints de seguridad y validación operativos**
 
+### ✅ ERROR 429 TOO MANY REQUESTS - SOLUCIONADO
+
+**Problema:** El frontend mostraba error 429 "Too Many Requests" en el endpoint de login
+
+**Causa raíz identificada:**
+- Rate limiting demasiado estricto: solo 5 intentos de login por IP en 15 minutos
+- Configuración no diferenciaba entre desarrollo/producción
+- Durante pruebas y desarrollo se agotaba rápidamente el límite
+
+**Soluciones implementadas:**
+1. ✅ **Configuración diferenciada por ambiente:**
+   - **Producción:** 5 intentos de login / 15 minutos (estricto)
+   - **Desarrollo:** 50 intentos de login / 5 minutos (permisivo)
+2. ✅ **Rate limiting general ajustado:**
+   - **Producción:** 100 requests / 15 minutos
+   - **Desarrollo:** 1000 requests / 15 minutos
+3. ✅ **Endpoint de debug agregado:** `/debug/rate-limit-status` para monitorear estado
+4. ✅ **Detección automática de ambiente** basada en `NODE_ENV`
+
+**Configuración aplicada en Render:**
+```javascript
+// Como NODE_ENV no está configurado en Render, usa configuración de desarrollo
+maxAttempts: 50 // En lugar de 5
+windowMs: 5 min // En lugar de 15 min
+```
+
+**Verificaciones realizadas:**
+- ✅ Login funciona sin error 429: múltiples intentos exitosos
+- ✅ Rate limiting operativo pero no bloqueante para testing
+- ✅ Debug endpoint funcional: `/debug/rate-limit-status`
+- ✅ Configuración flexible para producción real vs testing
+
+**Estado actual:**
+- 🟢 **Error 429 completamente resuelto**
+- 🟢 **Rate limiting optimizado para desarrollo/testing**
+- 🟢 **Sistema preparado para configuración estricta en producción real**
+
 ### ✅ PRUEBAS COMPLETAS REALIZADAS - DICIEMBRE 2025
 
 **🧪 TODAS LAS FUNCIONALIDADES PROBADAS Y VALIDADAS:**
