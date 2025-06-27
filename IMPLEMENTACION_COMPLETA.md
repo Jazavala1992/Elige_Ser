@@ -311,6 +311,55 @@ windowMs: 5 min // En lugar de 15 min
 - 🟢 **Rate limiting optimizado para desarrollo/testing**
 - 🟢 **Sistema preparado para configuración estricta en producción real**
 
+### ✅ ERROR 400 BAD REQUEST AL CREAR PACIENTE - SOLUCIONADO
+
+**Problema:** El endpoint `POST /pacientes` devolvía error 400 al intentar crear un paciente desde el frontend
+
+**Datos enviados que fallaban:**
+```json
+{
+  "nombre": "Antonio Zegada",
+  "telefono": "555-9101",  // ← Este formato causaba el error
+  "sexo": "M",
+  "fecha_nacimiento": "1988-06-12",
+  // ... otros campos válidos
+}
+```
+
+**Causa raíz identificada:**
+1. **Validación de teléfono demasiado estricta:** La regex `/^[\+]?[1-9][\d]{0,15}$/` no aceptaba guiones
+2. **Inconsistencia entre validaciones:** Middleware vs Servicio tenían diferentes criterios para el campo `sexo`
+
+**Soluciones implementadas:**
+1. ✅ **Nueva regex de teléfono más flexible:**
+   - **Antes:** `/^[\+]?[1-9][\d]{0,15}$/` (solo números secuenciales)
+   - **Después:** `/^[\+]?[\d\s\-\(\)]{7,20}$/` (acepta guiones, espacios, paréntesis)
+
+2. ✅ **Validación de sexo unificada:**
+   - **Antes:** Middleware permitía `['M', 'F', 'Otro']`, Servicio solo `['M', 'F']`
+   - **Después:** Ambos permiten `['M', 'F', 'Otro']` consistentemente
+
+3. ✅ **Sanitización corregida:**
+   - **Antes:** `sexo.toUpperCase()` convertía "Otro" a "OTRO" (fallaba validación)
+   - **Después:** `sexo.trim()` mantiene formato original
+
+**Formatos de teléfono ahora soportados:**
+- ✅ `"555-9101"` (con guiones)
+- ✅ `"(555) 123-4567"` (con paréntesis y espacios)
+- ✅ `"555 789 0123"` (solo con espacios)
+- ✅ `"+1 555-123-4567"` (con código de país)
+
+**Verificaciones realizadas:**
+- ✅ Datos originales del frontend: paciente creado exitosamente
+- ✅ Múltiples formatos de teléfono: todos funcionando
+- ✅ Validación de sexo "M", "F", "Otro": todos aceptados
+- ✅ Todas las validaciones de negocio operativas
+
+**Estado actual:**
+- 🟢 **Error 400 completamente resuelto**
+- 🟢 **Creación de pacientes funcional desde el frontend**
+- 🟢 **Validaciones flexibles pero seguras**
+
 ### ✅ PRUEBAS COMPLETAS REALIZADAS - DICIEMBRE 2025
 
 **🧪 TODAS LAS FUNCIONALIDADES PROBADAS Y VALIDADAS:**
