@@ -117,4 +117,58 @@ router.get('/debug/pacientes/:id',
   }
 );
 
+// Debug endpoint para verificar estructura de tabla Pacientes
+router.get("/debug/table-structure", 
+  async (req, res) => {
+    try {
+      console.log('DEBUG: Verificando estructura de tabla Pacientes');
+      
+      let connection;
+      try {
+        connection = await pool.getConnection();
+        
+        // Verificar si la tabla existe
+        const [tables] = await connection.query("SHOW TABLES LIKE 'Pacientes'");
+        console.log('DEBUG: Tabla Pacientes encontrada:', tables.length > 0);
+        
+        if (tables.length > 0) {
+          // Verificar estructura de tabla
+          const [columns] = await connection.query("DESCRIBE Pacientes");
+          console.log('DEBUG: Columnas en Pacientes:', columns.map(c => c.Field));
+          
+          res.json({
+            debug: true,
+            tableExists: true,
+            columns: columns.map(c => ({
+              field: c.Field,
+              type: c.Type,
+              null: c.Null,
+              key: c.Key,
+              default: c.Default
+            })),
+            message: "Estructura de tabla Pacientes obtenida exitosamente"
+          });
+        } else {
+          res.json({
+            debug: true,
+            tableExists: false,
+            error: 'Tabla Pacientes no encontrada'
+          });
+        }
+        
+      } finally {
+        if (connection) connection.release();
+      }
+      
+    } catch (error) {
+      console.error('DEBUG PACIENTES STRUCTURE ERROR:', error);
+      res.status(500).json({
+        debug: true,
+        error: error.message,
+        stack: error.stack
+      });
+    }
+  }
+);
+
 export default router;
