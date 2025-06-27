@@ -91,8 +91,8 @@ export class PacienteService {
           INSERT INTO Pacientes (
             id_usuario, nombre, fecha_nacimiento, sexo, telefono, 
             ocupacion, nivel_actividad, objetivo, horas_sueno, 
-            habitos, antecedentes, created_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+            habitos, antecedentes
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
         
         const [result] = await connection.query(query, [
@@ -152,11 +152,11 @@ export class PacienteService {
         SELECT 
           id_paciente, id_usuario, nombre, fecha_nacimiento, sexo, 
           telefono, ocupacion, nivel_actividad, objetivo, horas_sueno, 
-          habitos, antecedentes, created_at,
+          habitos, antecedentes,
           TIMESTAMPDIFF(YEAR, fecha_nacimiento, CURDATE()) as edad
         FROM Pacientes 
         WHERE id_usuario = ? 
-        ORDER BY created_at DESC
+        ORDER BY id_paciente DESC
       `, [idUsuario]);
       
       return pacientes;
