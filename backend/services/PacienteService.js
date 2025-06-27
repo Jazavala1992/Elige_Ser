@@ -18,7 +18,8 @@ export class PacienteService {
   
   // Validar teléfono
   static validarTelefono(telefono) {
-    const telefonoRegex = /^[\d\s\-\+\(\)]{7,15}$/;
+    // Usar la misma validación que el middleware
+    const telefonoRegex = /^[\+]?[1-9][\d]{0,15}$/;
     return telefonoRegex.test(telefono);
   }
   
@@ -113,6 +114,11 @@ export class PacienteService {
           ...datosLimpios
         };
         
+      } catch (dbError) {
+        console.error('Error en base de datos al crear paciente:', dbError);
+        const error = new Error('Error interno del servidor');
+        error.code = 'DATABASE_ERROR';
+        throw error;
       } finally {
         if (connection) connection.release();
       }
