@@ -274,10 +274,28 @@ docker-compose up -d --scale backend=3
 - 🟢 **Error 500 de login completamente resuelto**
 - 🟢 **Endpoints de seguridad y validación operativos**
 
-### 📋 Próximos pasos recomendados:
-1. Verificar login desde el frontend con credenciales válidas
-2. Crear usuarios de prueba si es necesario
-3. Monitorear logs de aplicación para detectar otros posibles issues
+### 🚨 PROBLEMAS PENDIENTES - ERROR 500 EN ENDPOINTS PROTEGIDOS
+
+**Estado actual:** 
+- ✅ Login funcionando correctamente
+- ✅ Registro funcionando correctamente  
+- ✅ Health checks funcionando
+- ❌ **Error 500 en endpoints protegidos:**
+  - `GET /usuario/{id}` - Error 500
+  - `GET /pacientes/{id}` - Error 500  
+  - `POST /pacientes` - Error 500
+
+**Posibles causas identificadas:**
+1. **Variables de entorno en Render:** JWT_SECRET puede no coincidir
+2. **Estructura de base de datos:** Tablas o campos faltantes en producción
+3. **Middleware de autenticación:** Problema con verificación de JWT
+4. **Servicios:** Métodos que funcionan localmente pero fallan en producción
+
+**Próximos pasos para diagnóstico:**
+1. Verificar variables de entorno en Render
+2. Validar estructura de tablas en base de datos de producción
+3. Crear endpoints de debug temporales
+4. Revisar logs específicos de errores en Render
 
 ---
 
