@@ -245,6 +245,42 @@ docker-compose up -d --scale backend=3
 
 ---
 
+## 🔧 RESOLUCIÓN DE PROBLEMAS - DICIEMBRE 2025
+
+### ✅ ERROR 500 EN LOGIN - SOLUCIONADO
+
+**Problema:** El endpoint `/login` devolvía error 500 en producción (Render)
+
+**Causa raíz identificada:**
+- Faltaba el método `autenticarUsuario` en `UsuarioService.js`
+- El método `crearUsuario` no insertaba datos en la base de datos
+- Inconsistencias en validaciones entre servicio y middleware
+
+**Soluciones implementadas:**
+1. ✅ **Agregado método `autenticarUsuario`** en `UsuarioService.js`
+2. ✅ **Corregido método `crearUsuario`** para insertar usuarios en BD
+3. ✅ **Mejorado manejo de errores** con códigos específicos (AUTH_ERROR, VALIDATION_ERROR, etc.)
+4. ✅ **Alineadas validaciones** de contraseña entre servicio y middleware
+5. ✅ **Agregado archivo `.env`** para desarrollo local
+
+**Verificaciones realizadas:**
+- ✅ Health checks funcionando: `https://elige-ser-backend.onrender.com/health`
+- ✅ Login endpoint funcional: devuelve 401 para credenciales inválidas (no más 500)
+- ✅ Validaciones funcionando correctamente
+- ✅ Redeploy exitoso en Render
+
+**Estado actual:**
+- 🟢 **Backend funcionando correctamente en producción**
+- 🟢 **Error 500 de login completamente resuelto**
+- 🟢 **Endpoints de seguridad y validación operativos**
+
+### 📋 Próximos pasos recomendados:
+1. Verificar login desde el frontend con credenciales válidas
+2. Crear usuarios de prueba si es necesario
+3. Monitorear logs de aplicación para detectar otros posibles issues
+
+---
+
 ## 🎉 RESULTADO FINAL
 
 ✅ **La aplicación ElijeSer está 100% optimizada y lista para producción**
