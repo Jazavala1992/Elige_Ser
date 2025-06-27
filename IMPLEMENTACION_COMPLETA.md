@@ -360,6 +360,70 @@ windowMs: 5 min // En lugar de 15 min
 - 🟢 **Creación de pacientes funcional desde el frontend**
 - 🟢 **Validaciones flexibles pero seguras**
 
+### ✅ ERROR 500 INTERNAL SERVER ERROR AL ACTUALIZAR PACIENTE - SOLUCIONADO
+
+**Problema:** El endpoint `PUT /pacientes/:id` devolvía error 500 al intentar actualizar un paciente
+
+**Errores identificados:**
+1. **Columna `updated_at` inexistente:** Query incluía `updated_at = NOW()` pero la columna no existe
+2. **Columna `created_at` inexistente:** Método `obtenerPacientePorId` seleccionaba columna inexistente
+3. **Validación incorrecta:** Usaba validación de creación completa para updates parciales
+4. **Tipo de dato incorrecto:** `horas_sueno` debe ser `int`, no `decimal`
+
+**Soluciones implementadas:**
+1. ✅ **Corrección de queries SQL:**
+   - Removido `updated_at = NOW()` del UPDATE (columna no existe)
+   - Removido `created_at` del SELECT (columna no existe)
+   - Agregado `activo` al SELECT (columna real existente)
+
+2. ✅ **Actualización parcial inteligente:**
+   - **Antes:** Requería todos los campos para cualquier update
+   - **Después:** Permite actualizar solo los campos deseados
+   - Nuevo método `validarDatosPacienteActualizacion()` para validación parcial
+   - Query dinámica construida solo con campos enviados
+
+3. ✅ **Corrección de tipos de datos:**
+   - `horas_sueno` convertido a entero con `Math.round()`
+   - Sanitización condicional solo de campos presentes
+
+4. ✅ **Mejor manejo de errores:**
+   - Códigos de error específicos (`VALIDATION_ERROR`, `NOT_FOUND`, `DATABASE_ERROR`)
+   - Logging mejorado para debugging
+
+**Estructura real de tabla verificada:**
+```sql
+-- Columnas existentes en Pacientes:
+id_paciente, id_usuario, nombre, fecha_nacimiento, sexo, telefono, 
+ocupacion, nivel_actividad, objetivo, horas_sueno (int), 
+habitos, antecedentes, activo
+```
+
+**Ejemplos de uso funcional:**
+```bash
+# Update de un solo campo
+PUT /pacientes/4 {"ocupacion": "Abogado Senior"} ✅
+
+# Update de múltiples campos
+PUT /pacientes/6 {
+  "nombre": "Nuevo Nombre",
+  "telefono": "555-999-8888",
+  "horas_sueno": 8
+} ✅
+```
+
+**Verificaciones realizadas:**
+- ✅ Update parcial de un campo: funcionando
+- ✅ Update parcial de múltiples campos: funcionando  
+- ✅ Validaciones de negocio: operativas solo para campos enviados
+- ✅ Manejo de errores: códigos específicos funcionando
+- ✅ Tipos de datos: `horas_sueno` como entero funcionando
+
+**Estado actual:**
+- 🟢 **Error 500 completamente resuelto**
+- 🟢 **Actualización parcial de pacientes funcional**
+- 🟢 **Validaciones flexibles pero seguras**
+- 🟢 **Queries alineadas con estructura real de BD**
+
 ### ✅ PRUEBAS COMPLETAS REALIZADAS - DICIEMBRE 2025
 
 **🧪 TODAS LAS FUNCIONALIDADES PROBADAS Y VALIDADAS:**
