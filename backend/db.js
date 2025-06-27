@@ -6,8 +6,13 @@ export const pool = mysql.createPool({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   port: process.env.DB_PORT,
-  connectionLimit: 2,        // Solo 2 conexiones concurrentes
+  connectionLimit: 10,           // Aumentado para producción
   waitForConnections: true,
-  queueLimit: 0
+  queueLimit: 0,
+  acquireTimeout: 60000,         // Timeout para obtener conexión
+  timeout: 60000,                // Timeout de query
+  reconnect: true,               // Reconexión automática
+  idleTimeout: 300000,           // 5 minutos de timeout para conexiones idle
+  maxIdle: 5                     // Máximo 5 conexiones idle
 });
 

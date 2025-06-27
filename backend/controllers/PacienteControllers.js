@@ -1,122 +1,82 @@
-import { pool } from "../db.js";
+import { PacienteService } from "../services/PacienteService.js";
 
 export const getPacientes = async (req, res) => {
     try {
       const id_usuario = req.params.id;
-      const [result] = await pool.query("SELECT * FROM Pacientes WHERE id_usuario = ?", [id_usuario]);
+      const result = await PacienteService.obtenerPacientesPorUsuario(id_usuario);
       res.json(result); 
     } catch (error) {
       console.error("Error al obtener los pacientes:", error);
-      res.status(500).json({ message: "Error al obtener los pacientes" });
+      
+      if (error.code === 'NOT_FOUND') {
+        return res.status(404).json({ message: error.message });
+      }
+      
+      res.status(500).json({ message: "Error interno del servidor" });
     }
 };
 
 
 export const createPacientes = async (req, res) => {
     try {
-      const {
-        id_usuario,
-        nombre,
-        fecha_nacimiento,
-        sexo,
-        telefono,
-        ocupacion,
-        nivel_actividad,
-        objetivo,
-        horas_sueno,
-        habitos,
-        antecedentes,
-      } = req.body;
-  
-      // Verificar que todos los campos requeridos estén presentes
-      if (
-        !id_usuario ||
-        !nombre ||
-        !fecha_nacimiento ||
-        !sexo ||
-        !telefono ||
-        !ocupacion ||
-        !nivel_actividad ||
-        !objetivo ||
-        !horas_sueno ||
-        !habitos ||
-        !antecedentes
-      ) {
-        return res.status(400).json({ message: "Todos los campos son obligatorios" });
-      }
-  
-      // Guardar el paciente en la base de datos
-      const nuevoPaciente = await pool.query(
-        "INSERT INTO Pacientes (id_usuario, nombre, fecha_nacimiento, sexo, telefono, ocupacion, nivel_actividad, objetivo, horas_sueno, habitos, antecedentes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        [
-          id_usuario,
-          nombre,
-          fecha_nacimiento,
-          sexo,
-          telefono,
-          ocupacion,
-          nivel_actividad,
-          objetivo,
-          horas_sueno,
-          habitos,
-          antecedentes,
-        ]
-      );
-  
-      res.status(201).json({ message: "Paciente creado exitosamente", paciente: nuevoPaciente });
+      const datosCompletos = req.body;
+      
+      const result = await PacienteService.crearPaciente(datosCompletos);
+      
+      res.status(201).json({
+        success: true,
+        message: "Paciente creado exitosamente",
+        paciente: result
+      });
     } catch (error) {
-      console.error("Error al crear paciente:", error);
+      console.error("Error al crear el paciente:", error);
+      
+      if (error.code === 'VALIDATION_ERROR') {
+        return res.status(400).json({ message: error.message });
+      }
+      
       res.status(500).json({ message: "Error interno del servidor" });
     }
-  };
+};
 
-  export const updatePacientes = async (req, res) => {
+export const updatePacientes = async (req, res) => {
     try {
-      const {
-        nombre,
-        telefono,
-        ocupacion,
-        nivel_actividad,
-        objetivo,
-        horas_sueno,
-        habitos,
-        antecedentes,
-      } = req.body;
-  
-      const result = await pool.query(
-        `UPDATE Pacientes 
-         SET nombre = ?, telefono = ?, ocupacion = ?, nivel_actividad = ?, objetivo = ?, horas_sueno = ?, habitos = ?, antecedentes = ?
-         WHERE id_paciente = ?`,
-        [nombre, telefono, ocupacion, nivel_actividad, objetivo, horas_sueno, habitos, antecedentes, req.params.id]
-      );
-  
-      if (result.affectedRows === 0) {
-        return res.status(404).json({ message: "Paciente no encontrado" });
-      }
-  
-      res.json({ message: "Paciente actualizado" });
+      const result = await PacienteService.actualizarPaciente(req.params.id, req.body);
+      
+      res.json({
+        success: true,
+        message: "Paciente actualizado exitosamente",
+        paciente: result
+      });
     } catch (error) {
       console.error("Error al actualizar el paciente:", error);
-      res.status(500).json({ error: error.message });
-    }
-  };
-
-  export const deletePacientes = async (req, res) => {
-    try {
-      const result = await pool.query(
-        `UPDATE Pacientes 
-         SET activo = FALSE 
-         WHERE id_paciente = ?`,
-        [req.params.id]
-      );
-  
-      if (result.affectedRows === 0) {
-        return res.status(404).json({ message: "Paciente no encontrado" });
+      
+      if (error.code === 'NOT_FOUND') {
+        return res.status(404).json({ message: error.message });
       }
-  
-      res.json({ message: "Paciente eliminado" });
+      if (error.code === 'VALIDATION_ERROR') {
+        return res.status(400).json({ message: error.message });
+      }
+      
+      res.status(500).json({ message: "Error interno del servidor" });
+    }
+};
+
+export const deletePacientes = async (req, res) => {
+    try {
+      const result = await PacienteService.eliminarPaciente(req.params.id);
+      
+      res.json({
+        success: true,
+        message: result.message
+      });
     } catch (error) {
       console.error("Error al eliminar el paciente:", error);
-      res.status(500).json({ error: error.message });
+      
+      if (error.code === 'NOT_FOUND') {
+        return res.status(404).json({ message: error.message });
+      }
+      
+      res.status(500).json({ message: "Error interno del servidor" });
     }
-  };
+};

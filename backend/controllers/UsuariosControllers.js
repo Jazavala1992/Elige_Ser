@@ -1,44 +1,32 @@
-import {pool} from "../db.js";
-import bcrypt from "bcrypt";
+import { UsuarioService } from "../services/UsuarioService.js";
 import jwt from "jsonwebtoken";
 
 export const registerUsuario = async (req, res) => {
-  const { nombre, username, email, password } = req.body;
-
   try {
-    console.log("Datos recibidos:", { nombre, username, email, password: "***" });
-    
-    // Verificar que todos los campos estén presentes
-    if (!nombre || !username || !email || !password) {
-      return res.status(400).json({ error: "Todos los campos son obligatorios" });
-    }
+    const { nombre, username, email, password } = req.body;
 
-    // Encriptar la contraseña (sin test de conexión extra)
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const result = await UsuarioService.crearUsuario({
+      nombre,
+      username,
+      email,
+      password
+    });
 
-    // Insertar usuario directamente
-    const query = "INSERT INTO Usuarios (nombre, username, email, password) VALUES (?, ?, ?, ?)";
-    console.log("Ejecutando query:", query);
-    
-    const [result] = await pool.query(query, [nombre, username, email, hashedPassword]);
-
-    console.log("Usuario creado exitosamente:", result.insertId);
-    res.status(201).json({ message: "Usuario creado exitosamente", id: result.insertId });
+    res.status(201).json(result);
   } catch (error) {
     console.error("Error al crear el usuario:", error);
     
-    if (error.code === 'ER_NO_SUCH_TABLE') {
-      return res.status(500).json({ error: "La tabla Usuarios no existe" });
+    if (error.code === 'VALIDATION_ERROR') {
+      return res.status(400).json({ error: error.message });
     }
-    if (error.code === 'ER_DUP_ENTRY') {
-      return res.status(400).json({ error: "El email o username ya existe" });
+    if (error.code === 'DUPLICATE_ENTRY') {
+      return res.status(400).json({ error: error.message });
     }
-    if (error.code === 'ER_USER_LIMIT_REACHED') {
-      return res.status(503).json({ error: "Demasiadas conexiones, intenta de nuevo" });
+    if (error.code === 'DATABASE_ERROR') {
+      return res.status(500).json({ error: "Error interno del servidor" });
     }
     
-    res.status(500).json({ error: "Error interno del servidor", details: error.message });
+    res.status(500).json({ error: "Error interno del servidor" });
   }
 };
 
@@ -46,28 +34,11 @@ export const loginUsuario = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ success: false, message: "Email y contraseña son requeridos" });
-    }
-
-    const [result] = await pool.query("SELECT * FROM Usuarios WHERE email = ?", [email]);
-
-    if (result.length === 0) {
-      return res.status(401).json({ success: false, message: "Credenciales inválidas" });
-    }
-
-    const user = result[0];
-
-    // Verificar contraseña
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
-      return res.status(401).json({ success: false, message: "Credenciales inválidas" });
-    }
+    const result = await UsuarioService.autenticarUsuario(email, password);
 
     // Usar variable de entorno para JWT secret
     const token = jwt.sign(
-      { id: user.id_usuario }, 
+      { id: result.user.id }, 
       process.env.JWT_SECRET || "secret_key", 
       { expiresIn: "1h" }
     );
@@ -75,75 +46,80 @@ export const loginUsuario = async (req, res) => {
     return res.status(200).json({
       success: true,
       token,
-      user: { id: user.id_usuario, nombre: user.nombre, username: user.username, email: user.email },
+      user: result.user
     });
   } catch (error) {
     console.error("Error en el servidor:", error);
-    return res.status(500).json({ success: false, message: "Error interno del servidor", error: error.message });
+    
+    if (error.code === 'VALIDATION_ERROR' || error.code === 'AUTH_ERROR') {
+      return res.status(401).json({ success: false, message: error.message });
+    }
+    
+    return res.status(500).json({ success: false, message: "Error interno del servidor" });
   }
 };
 
 export const getUsuario = async (req, res) => {
     try {
-        const [result] = await pool.query('SELECT id_usuario, nombre, username, email FROM Usuarios WHERE id_usuario = ?', [req.params.id]);
-        
-        if (result.length === 0) {
-            return res.status(404).json({ 
-                success: false, 
-                message: 'Usuario no encontrado' 
-            });
-        }
+        const result = await UsuarioService.obtenerUsuarioPorId(req.params.id);
         
         res.json({
             success: true,
-            user: {
-                id: result[0].id_usuario,
-                nombre: result[0].nombre,
-                username: result[0].username,
-                email: result[0].email
-            }
+            user: result
         });
     } catch (error) {
         console.error("Error en el servidor:", error);
+        
+        if (error.code === 'NOT_FOUND') {
+            return res.status(404).json({ 
+                success: false, 
+                message: error.message 
+            });
+        }
+        
         res.status(500).json({ 
             success: false, 
-            message: 'Error interno del servidor', 
-            error: error.message 
+            message: 'Error interno del servidor'
         });
     }
 };
 
 export const updateUsuario = async (req, res) => {
     try {
-        const result = await pool.query('UPDATE Usuarios SET ? WHERE id_usuario=?', [req.body, req.params.id_usuario]);
-        if (result.affectedRows === 0) return res.status(404).json({ message: 'Usuario no encontrado' });
-        res.json({ message: 'Usuario actualizado' });
+        const result = await UsuarioService.actualizarUsuario(req.params.id_usuario, req.body);
+        res.json(result);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error("Error al actualizar usuario:", error);
+        
+        if (error.code === 'NOT_FOUND') {
+            return res.status(404).json({ message: error.message });
+        }
+        if (error.code === 'VALIDATION_ERROR') {
+            return res.status(400).json({ error: error.message });
+        }
+        
+        res.status(500).json({ error: 'Error interno del servidor' });
     }
 }
 
 export const deleteUsuario = async (req, res) => {
     try {
-        const result = await pool.query('DELETE FROM Usuarios WHERE id_usuario = ?', [req.params.id_usuario]);
-        if (result.affectedRows === 0) return res.status(404).json({ message: 'Usuario no encontrado' });
-        res.json({ message: 'Usuario eliminado' });
+        const result = await UsuarioService.eliminarUsuario(req.params.id_usuario);
+        res.json(result);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error("Error al eliminar usuario:", error);
+        
+        if (error.code === 'NOT_FOUND') {
+            return res.status(404).json({ message: error.message });
+        }
+        
+        res.status(500).json({ error: 'Error interno del servidor' });
     }
 }
 
-// Cambiado el query para obtener pacientes
 export const getPacientesPorUsuario = async (req, res) => {
     try {
-        const [result] = await pool.query("SELECT * FROM Pacientes WHERE id_usuario = ?", [req.params.id_usuario]);
-        
-        if (result.length === 0) {
-            return res.status(404).json({ 
-                success: false, 
-                message: 'No se encontraron pacientes para este usuario' 
-            });
-        }
+        const result = await UsuarioService.obtenerPacientesPorUsuario(req.params.id_usuario);
         
         res.json({
             success: true,
@@ -151,10 +127,17 @@ export const getPacientesPorUsuario = async (req, res) => {
         });
     } catch (error) {
         console.error("Error en el servidor:", error);
+        
+        if (error.code === 'NOT_FOUND') {
+            return res.status(404).json({ 
+                success: false, 
+                message: error.message 
+            });
+        }
+        
         res.status(500).json({ 
             success: false, 
-            message: 'Error interno del servidor', 
-            error: error.message 
+            message: 'Error interno del servidor'
         });
     }
 };
