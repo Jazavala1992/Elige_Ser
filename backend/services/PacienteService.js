@@ -174,6 +174,12 @@ export class PacienteService {
   
   // Obtener paciente por ID
   static async obtenerPacientePorId(idPaciente) {
+    if (!idPaciente) {
+      const error = new Error('ID de paciente es requerido');
+      error.code = 'VALIDATION_ERROR';
+      throw error;
+    }
+
     let connection;
     try {
       connection = await pool.getConnection();
@@ -182,7 +188,7 @@ export class PacienteService {
         SELECT 
           id_paciente, id_usuario, nombre, fecha_nacimiento, sexo, 
           telefono, ocupacion, nivel_actividad, objetivo, horas_sueno, 
-          habitos, antecedentes, created_at,
+          habitos, antecedentes, activo,
           TIMESTAMPDIFF(YEAR, fecha_nacimiento, CURDATE()) as edad
         FROM Pacientes 
         WHERE id_paciente = ? 
@@ -190,10 +196,23 @@ export class PacienteService {
       `, [idPaciente]);
       
       if (pacientes.length === 0) {
-        throw new Error('Paciente no encontrado');
+        const error = new Error('Paciente no encontrado');
+        error.code = 'NOT_FOUND';
+        throw error;
       }
       
       return pacientes[0];
+      
+    } catch (error) {
+      // Re-lanzar errores ya procesados
+      if (error.code) {
+        throw error;
+      }
+      
+      console.error('Error al obtener paciente por ID:', error);
+      const dbError = new Error('Error interno del servidor');
+      dbError.code = 'DATABASE_ERROR';
+      throw dbError;
       
     } finally {
       if (connection) connection.release();
