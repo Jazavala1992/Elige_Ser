@@ -35,20 +35,42 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor - manejo de errores global
+// Response interceptor - manejo de errores global mejorado
 api.interceptors.response.use(
   (response) => {
     console.log(`API Response: ${response.status} ${response.config.url}`);
     return response;
   },
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
+    
     console.error('API Error:', error.response?.data || error.message);
     
-    // Manejar errores de autenticación
-    if (error.response?.status === 401) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("userId");
-      window.location.href = "/login";
+    // Manejar errores de autenticación con retry automático
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      // Si el token expiró, intentar refrescar
+      if (error.response?.data?.message?.includes('expired') || 
+          error.response?.data?.message?.includes('expirado')) {
+        
+        console.log('Token expired, redirecting to login...');
+        
+        // Limpiar storage
+        localStorage.removeItem("token");
+        localStorage.removeItem("userId");
+        
+        // Limpiar cache
+        await hybridCache.clear();
+        
+        // Redirigir solo si no estamos ya en login
+        if (!window.location.pathname.includes('/login') && 
+            !window.location.pathname.includes('/register')) {
+          window.location.href = "/login";
+        }
+        
+        return Promise.reject(new Error('Sesión expirada. Por favor, inicia sesión nuevamente.'));
+      }
     }
     
     // Transformar error para mejor UX

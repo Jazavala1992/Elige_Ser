@@ -119,13 +119,31 @@ const validateRequest = (req, res, next) => {
   next();
 };
 
-// MIDDLEWARE DE LOGGING DE REQUESTS CON MONITOREO
+// MIDDLEWARE DE LOGGING DE REQUESTS CON FILTROS
 app.use((req, res, next) => {
   const start = Date.now();
   
   res.on('finish', () => {
     const duration = Date.now() - start;
-    MonitoringService.logRequest(req, res, duration);
+    
+    // Filtrar health checks de Render para reducir logs
+    const isHealthCheck = req.get('User-Agent')?.includes('Go-http-client') ||
+                         req.url === '/health' ||
+                         req.url === '/ping' ||
+                         req.url === '/';
+    
+    if (!isHealthCheck) {
+      MonitoringService.logRequest(req, res, duration);
+    } else {
+      // Log mínimo para health checks
+      logger.debug('Health check request', {
+        method: req.method,
+        url: req.url,
+        status: res.statusCode,
+        duration: `${duration}ms`,
+        userAgent: req.get('User-Agent')
+      });
+    }
   });
   
   next();
@@ -179,6 +197,53 @@ app.get('/alerts', async (req, res) => {
       message: 'Failed to retrieve alerts'
     });
   }
+});
+
+// RUTAS PÚBLICAS (sin autenticación)
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'ElijeSer Backend API is running!', 
+    status: 'OK',
+    version: '2.0.0',
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get('/health', async (req, res) => {
+  try {
+    const health = await MonitoringService.healthCheck();
+    const statusCode = health.status === 'OK' ? 200 : 503;
+    res.status(statusCode).json(health);
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      message: 'Health check failed',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+app.get('/ping', (req, res) => {
+  res.json({ 
+    status: 'pong', 
+    timestamp: new Date().toISOString() 
+  });
+});
+
+// ENDPOINT ESPECÍFICO PARA RENDER HEALTH CHECK
+app.get('/render-health', (req, res) => {
+  res.status(200).send('OK');
+});
+
+// ENDPOINT PARA RENDER STATUS
+app.get('/status', (req, res) => {
+  res.json({
+    status: 'healthy',
+    service: 'elijeser-backend',
+    version: '2.0.0',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString()
+  });
 });
 
 // USAR TODAS LAS RUTAS
