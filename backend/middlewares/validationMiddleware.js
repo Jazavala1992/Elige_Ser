@@ -100,8 +100,8 @@ export const validatePatientCreation = [
     
   body('telefono')
     .trim()
-    .matches(/^[\+]?[1-9][\d]{0,15}$/)
-    .withMessage('Número de teléfono inválido'),
+    .matches(/^[\+]?[\d\s\-\(\)]{7,20}$/)
+    .withMessage('Número de teléfono inválido - debe contener entre 7 y 20 caracteres (números, espacios, guiones y paréntesis permitidos)'),
     
   body('ocupacion')
     .trim()
@@ -144,8 +144,8 @@ export const validatePatientUpdate = [
   body('telefono')
     .optional()
     .trim()
-    .matches(/^[\+]?[1-9][\d]{0,15}$/)
-    .withMessage('Número de teléfono inválido'),
+    .matches(/^[\+]?[\d\s\-\(\)]{7,20}$/)
+    .withMessage('Número de teléfono inválido - debe contener entre 7 y 20 caracteres (números, espacios, guiones y paréntesis permitidos)'),
     
   body('ocupacion')
     .optional()

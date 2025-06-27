@@ -18,8 +18,8 @@ export class PacienteService {
   
   // Validar teléfono
   static validarTelefono(telefono) {
-    // Usar la misma validación que el middleware
-    const telefonoRegex = /^[\+]?[1-9][\d]{0,15}$/;
+    // Validación más flexible que acepta guiones, espacios y paréntesis
+    const telefonoRegex = /^[\+]?[\d\s\-\(\)]{7,20}$/;
     return telefonoRegex.test(telefono);
   }
   
@@ -56,8 +56,8 @@ export class PacienteService {
       errores.push('Fecha de nacimiento inválida');
     }
     
-    if (!data.sexo || !['M', 'F'].includes(data.sexo)) {
-      errores.push('Sexo debe ser M o F');
+    if (!data.sexo || !['M', 'F', 'Otro'].includes(data.sexo)) {
+      errores.push('Sexo debe ser M, F u Otro');
     }
     
     if (data.telefono && !this.validarTelefono(data.telefono)) {
