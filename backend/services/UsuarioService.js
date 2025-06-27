@@ -204,7 +204,7 @@ export class UsuarioService {
     try {
       connection = await pool.getConnection();
       const [users] = await connection.query(
-        "SELECT id_usuario, nombre, username, email, created_at FROM Usuarios WHERE id_usuario = ? LIMIT 1",
+        "SELECT id_usuario, nombre, username, email FROM Usuarios WHERE id_usuario = ? LIMIT 1",
         [id]
       );
       
@@ -387,7 +387,7 @@ export class UsuarioService {
       
       // Obtener el usuario actualizado
       const [updatedUser] = await connection.query(
-        "SELECT id_usuario, nombre, username, email, created_at FROM Usuarios WHERE id_usuario = ? LIMIT 1",
+        "SELECT id_usuario, nombre, username, email FROM Usuarios WHERE id_usuario = ? LIMIT 1",
         [id]
       );
       
