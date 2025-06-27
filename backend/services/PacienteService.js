@@ -34,7 +34,7 @@ export class PacienteService {
       ocupacion: data.ocupacion?.trim(),
       nivel_actividad: data.nivel_actividad?.trim(),
       objetivo: data.objetivo?.trim(),
-      horas_sueno: parseFloat(data.horas_sueno),
+      horas_sueno: Math.round(parseFloat(data.horas_sueno) || 0), // Convertir a entero
       habitos: data.habitos?.trim(),
       antecedentes: data.antecedentes?.trim()
     };
@@ -206,18 +206,21 @@ export class PacienteService {
     const errores = this.validarDatosPaciente(datosLimpios);
     
     if (errores.length > 0) {
-      throw new Error(`Errores de validación: ${errores.join(', ')}`);
+      const error = new Error(`Errores de validación: ${errores.join(', ')}`);
+      error.code = 'VALIDATION_ERROR';
+      throw error;
     }
-    
+
     let connection;
     try {
       connection = await pool.getConnection();
       
+      // Query sin updated_at ya que la columna no existe
       const query = `
         UPDATE Pacientes SET
           nombre = ?, fecha_nacimiento = ?, sexo = ?, telefono = ?,
           ocupacion = ?, nivel_actividad = ?, objetivo = ?, horas_sueno = ?,
-          habitos = ?, antecedentes = ?, updated_at = NOW()
+          habitos = ?, antecedentes = ?
         WHERE id_paciente = ?
       `;
       
@@ -229,17 +232,30 @@ export class PacienteService {
         datosLimpios.ocupacion,
         datosLimpios.nivel_actividad,
         datosLimpios.objetivo,
-        datosLimpios.horas_sueno,
+        Math.round(datosLimpios.horas_sueno), // Convertir a entero para la BD
         datosLimpios.habitos,
         datosLimpios.antecedentes,
         idPaciente
       ]);
       
       if (result.affectedRows === 0) {
-        throw new Error('Paciente no encontrado');
+        const error = new Error('Paciente no encontrado');
+        error.code = 'NOT_FOUND';
+        throw error;
       }
       
       return await this.obtenerPacientePorId(idPaciente);
+      
+    } catch (error) {
+      // Re-lanzar errores ya procesados
+      if (error.code) {
+        throw error;
+      }
+      
+      console.error('Error al actualizar paciente:', error);
+      const dbError = new Error('Error interno del servidor');
+      dbError.code = 'DATABASE_ERROR';
+      throw dbError;
       
     } finally {
       if (connection) connection.release();
