@@ -63,10 +63,12 @@ app.use(compression({
   }
 }));
 
-// RATE LIMITING
+// RATE LIMITING - Configuración diferente para producción vs desarrollo
+const isProduction = process.env.NODE_ENV === 'production';
+
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // máximo 100 requests por IP
+  max: isProduction ? 100 : 1000, // más permisivo en desarrollo
   message: { 
     success: false, 
     error: 'Demasiadas peticiones, intenta de nuevo más tarde' 
@@ -77,10 +79,10 @@ const limiter = rateLimit({
 
 app.use(limiter);
 
-// Rate limiting específico para auth
+// Rate limiting específico para auth - más permisivo en desarrollo
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5, // máximo 5 intentos de login por IP
+  windowMs: isProduction ? 15 * 60 * 1000 : 5 * 60 * 1000, // 15 min en prod, 5 min en dev
+  max: isProduction ? 5 : 50, // 5 intentos en prod, 50 en dev
   message: { 
     success: false, 
     error: 'Demasiados intentos de login, intenta de nuevo más tarde' 

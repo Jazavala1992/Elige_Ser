@@ -12,10 +12,12 @@ import { validationResult, param } from 'express-validator';
 import rateLimit from 'express-rate-limit';
 import { pool } from '../db.js';
 
-// Rate limiting específico para autenticación
+// Rate limiting específico para autenticación - más permisivo en desarrollo
+const isProduction = process.env.NODE_ENV === 'production';
+
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 5, // máximo 5 intentos por IP
+  windowMs: isProduction ? 15 * 60 * 1000 : 5 * 60 * 1000, // 15 min en prod, 5 min en dev
+  max: isProduction ? 5 : 50, // 5 intentos en prod, 50 en dev
   message: { 
     success: false, 
     error: 'Demasiados intentos de login, intenta de nuevo más tarde' 
@@ -146,5 +148,29 @@ router.get("/debug/usuario/:id",
     }
   }
 );
+
+// Debug endpoint para verificar el estado del rate limiting
+router.get("/debug/rate-limit-status", (req, res) => {
+  const rateLimitInfo = req.rateLimit || {};
+  
+  res.json({
+    debug: true,
+    message: "Estado del rate limiting",
+    environment: process.env.NODE_ENV || 'development',
+    isProduction: process.env.NODE_ENV === 'production',
+    ip: req.ip,
+    rateLimitSettings: {
+      authLimiter: {
+        windowMs: isProduction ? "15 min" : "5 min",
+        maxAttempts: isProduction ? 5 : 50,
+        production: isProduction
+      }
+    },
+    currentLimits: rateLimitInfo,
+    recommendation: isProduction ? 
+      "En producción: límites estrictos aplicados" : 
+      "En desarrollo: límites relajados para testing"
+  });
+});
 
 export default router;
