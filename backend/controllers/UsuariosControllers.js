@@ -1,4 +1,5 @@
 import { UsuarioService } from "../services/UsuarioService.js";
+import { PacienteService } from "../services/PacienteService.js";
 import jwt from "jsonwebtoken";
 
 export const registerUsuario = async (req, res) => {
@@ -119,7 +120,7 @@ export const deleteUsuario = async (req, res) => {
 
 export const getPacientesPorUsuario = async (req, res) => {
     try {
-        const result = await UsuarioService.obtenerPacientesPorUsuario(req.params.id_usuario);
+        const result = await PacienteService.obtenerPacientesPorUsuario(req.params.id_usuario);
         
         res.json({
             success: true,

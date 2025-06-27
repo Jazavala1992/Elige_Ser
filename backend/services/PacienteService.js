@@ -72,51 +72,72 @@ export class PacienteService {
   
   // Crear paciente
   static async crearPaciente(data) {
-    const datosLimpios = this.sanitizarDatosPaciente(data);
-    const errores = this.validarDatosPaciente(datosLimpios);
-    
-    if (errores.length > 0) {
-      throw new Error(`Errores de validación: ${errores.join(', ')}`);
-    }
-    
-    let connection;
     try {
-      connection = await pool.getConnection();
+      const datosLimpios = this.sanitizarDatosPaciente(data);
+      const errores = this.validarDatosPaciente(datosLimpios);
       
-      const query = `
-        INSERT INTO Pacientes (
-          id_usuario, nombre, fecha_nacimiento, sexo, telefono, 
-          ocupacion, nivel_actividad, objetivo, horas_sueno, 
-          habitos, antecedentes, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
-      `;
+      if (errores.length > 0) {
+        const error = new Error(`Errores de validación: ${errores.join(', ')}`);
+        error.code = 'VALIDATION_ERROR';
+        throw error;
+      }
       
-      const [result] = await connection.query(query, [
-        datosLimpios.id_usuario,
-        datosLimpios.nombre,
-        datosLimpios.fecha_nacimiento,
-        datosLimpios.sexo,
-        datosLimpios.telefono,
-        datosLimpios.ocupacion,
-        datosLimpios.nivel_actividad,
-        datosLimpios.objetivo,
-        datosLimpios.horas_sueno,
-        datosLimpios.habitos,
-        datosLimpios.antecedentes
-      ]);
+      let connection;
+      try {
+        connection = await pool.getConnection();
+        
+        const query = `
+          INSERT INTO Pacientes (
+            id_usuario, nombre, fecha_nacimiento, sexo, telefono, 
+            ocupacion, nivel_actividad, objetivo, horas_sueno, 
+            habitos, antecedentes, created_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+        `;
+        
+        const [result] = await connection.query(query, [
+          datosLimpios.id_usuario,
+          datosLimpios.nombre,
+          datosLimpios.fecha_nacimiento,
+          datosLimpios.sexo,
+          datosLimpios.telefono,
+          datosLimpios.ocupacion,
+          datosLimpios.nivel_actividad,
+          datosLimpios.objetivo,
+          datosLimpios.horas_sueno,
+          datosLimpios.habitos,
+          datosLimpios.antecedentes
+        ]);
+        
+        return {
+          id_paciente: result.insertId,
+          ...datosLimpios
+        };
+        
+      } finally {
+        if (connection) connection.release();
+      }
       
-      return {
-        id: result.insertId,
-        ...datosLimpios
-      };
+    } catch (error) {
+      // Re-lanzar errores ya procesados
+      if (error.code) {
+        throw error;
+      }
       
-    } finally {
-      if (connection) connection.release();
+      console.error('Error al crear paciente:', error);
+      const dbError = new Error('Error interno del servidor');
+      dbError.code = 'DATABASE_ERROR';
+      throw dbError;
     }
   }
   
   // Obtener pacientes por usuario
   static async obtenerPacientesPorUsuario(idUsuario) {
+    if (!idUsuario) {
+      const error = new Error('ID de usuario es requerido');
+      error.code = 'VALIDATION_ERROR';
+      throw error;
+    }
+    
     let connection;
     try {
       connection = await pool.getConnection();
@@ -133,6 +154,12 @@ export class PacienteService {
       `, [idUsuario]);
       
       return pacientes;
+      
+    } catch (error) {
+      console.error('Error al obtener pacientes por usuario:', error);
+      const dbError = new Error('Error interno del servidor');
+      dbError.code = 'DATABASE_ERROR';
+      throw dbError;
       
     } finally {
       if (connection) connection.release();
