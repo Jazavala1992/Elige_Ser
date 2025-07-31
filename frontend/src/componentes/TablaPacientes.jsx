@@ -104,6 +104,8 @@ function TablaPacientes() {
       };
       
       console.log("Datos de consulta a enviar:", consultaData);
+      console.log("Token actual:", localStorage.getItem("token"));
+      console.log("Paciente para consulta:", pacienteParaConsulta);
       
       await crearConsulta(consultaData);
       
@@ -112,11 +114,14 @@ function TablaPacientes() {
         title: "Consulta creada exitosamente",
         text: `La consulta para ${pacienteParaConsulta.nombre} ha sido registrada correctamente.`,
         confirmButtonText: "Aceptar",
+      }).then(() => {
+        setModalConsultaOpen(false);
+        navigate("/consultas"); // Redirigir a la página de consultas
       });
-      
-      setModalConsultaOpen(false);
     } catch (error) {
       console.error("Error al crear consulta:", error);
+      console.error("Error detallado:", error.response?.data);
+      console.error("Status del error:", error.response?.status);
       
       let errorMessage = "Ocurrió un problema al crear la consulta. Por favor, inténtalo nuevamente.";
       
