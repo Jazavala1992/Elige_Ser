@@ -2,6 +2,7 @@ import React from "react";
 import Navbar from "../componentes/navbar";
 import TablaPacientes from "../componentes/TablaPacientes";
 import { PacientesProvider } from "../context/PacientesContext";
+import { ConsultasProvider } from "../context/ConsultasContext";
 
 function Pacientes() {
   return (
@@ -9,7 +10,9 @@ function Pacientes() {
       <Navbar />
       <div className="container">
         <PacientesProvider>
-         <TablaPacientes />
+          <ConsultasProvider>
+            <TablaPacientes />
+          </ConsultasProvider>
         </PacientesProvider>
       </div>
     </div>

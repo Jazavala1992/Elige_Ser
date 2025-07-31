@@ -3,6 +3,7 @@ import { FaEdit, FaTrash, FaPlus, FaRulerCombined } from "react-icons/fa";
 import "../css/tablaPacientes.css";
 import { obtenerPacientesRequest} from "../api/api"; 
 import { usePacientes } from "../context/PacientesContext";
+import { useConsultas } from "../context/ConsultasContext";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from "reactstrap";
@@ -11,10 +12,13 @@ import * as Yup from "yup";
 
 function TablaPacientes() {
   const { pacientes, setPacientes, eliminarPaciente, editPaciente } = usePacientes();
+  const { crearConsulta } = useConsultas();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [modalConsultaOpen, setModalConsultaOpen] = useState(false);
   const [pacienteSeleccionado, setPacienteSeleccionado] = useState(null);
+  const [pacienteParaConsulta, setPacienteParaConsulta] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -36,6 +40,14 @@ function TablaPacientes() {
 
   const handleMediciones = (idPaciente) => {
     navigate(`/consultas/${idPaciente}`);
+  };
+
+  const handleNuevaConsulta = (idPaciente) => {
+    const paciente = pacientes.find((p) => p.id_paciente === idPaciente);
+    if (paciente) {
+      setPacienteParaConsulta(paciente);
+      setModalConsultaOpen(true);
+    }
   };
 
   const handleEditar = (idPaciente) => {
@@ -60,6 +72,12 @@ function TablaPacientes() {
     antecedentes: Yup.string().required("Los antecedentes son obligatorios"),
   });
 
+  const consultaValidationSchema = Yup.object().shape({
+    fecha_consulta: Yup.date().required("La fecha de consulta es obligatoria"),
+    Hora: Yup.string().required("La hora es obligatoria"),
+    observaciones: Yup.string().required("Las observaciones son obligatorias"),
+  });
+
   const handleSubmitEditar = async (values) => {
     try {
       await editPaciente(pacienteSeleccionado.id_paciente, values);
@@ -75,6 +93,47 @@ function TablaPacientes() {
     } catch (error) {
       console.error("Error al actualizar el paciente:", error);
       Swal.fire("Error", "No se pudo actualizar el paciente. Inténtalo más tarde.", "error");
+    }
+  };
+
+  const handleSubmitConsulta = async (values) => {
+    try {
+      const consultaData = {
+        ...values,
+        id_paciente: pacienteParaConsulta.id_paciente,
+      };
+      
+      console.log("Datos de consulta a enviar:", consultaData);
+      
+      await crearConsulta(consultaData);
+      
+      Swal.fire({
+        icon: "success",
+        title: "Consulta creada exitosamente",
+        text: `La consulta para ${pacienteParaConsulta.nombre} ha sido registrada correctamente.`,
+        confirmButtonText: "Aceptar",
+      });
+      
+      setModalConsultaOpen(false);
+    } catch (error) {
+      console.error("Error al crear consulta:", error);
+      
+      let errorMessage = "Ocurrió un problema al crear la consulta. Por favor, inténtalo nuevamente.";
+      
+      if (error.response?.status === 400) {
+        errorMessage = error.response.data?.message || "Error de validación en los datos de la consulta.";
+      } else if (error.response?.status === 401) {
+        errorMessage = "Sesión expirada. Por favor, inicia sesión nuevamente.";
+      } else if (error.response?.status === 500) {
+        errorMessage = "Error interno del servidor. Contacta al administrador.";
+      }
+      
+      Swal.fire({
+        icon: "error",
+        title: "Error al crear consulta",
+        text: errorMessage,
+        confirmButtonText: "Aceptar",
+      });
     }
   };
 
@@ -227,6 +286,60 @@ function TablaPacientes() {
                       {isSubmitting ? "Guardando..." : "Guardar"}
                     </Button>
                     <Button color="secondary" onClick={() => setModalOpen(false)}>
+                      Cancelar
+                    </Button>
+                  </ModalFooter>
+                </Form>
+              )}
+            </Formik>
+          </ModalBody>
+        </Modal>
+      )}
+
+      {/* Modal para crear nueva consulta */}
+      {modalConsultaOpen && pacienteParaConsulta && (
+        <Modal isOpen={modalConsultaOpen} toggle={() => setModalConsultaOpen(!modalConsultaOpen)}>
+          <ModalHeader toggle={() => setModalConsultaOpen(!modalConsultaOpen)}>
+            Nueva Consulta para {pacienteParaConsulta.nombre}
+          </ModalHeader>
+          <ModalBody>
+            <Formik
+              initialValues={{
+                fecha_consulta: new Date().toISOString().split('T')[0], // Fecha actual por defecto
+                Hora: "",
+                observaciones: "",
+              }}
+              validationSchema={consultaValidationSchema}
+              onSubmit={handleSubmitConsulta}
+            >
+              {({ isSubmitting }) => (
+                <Form>
+                  <div className="form-group">
+                    <label htmlFor="fecha_consulta">Fecha de Consulta</label>
+                    <Field type="date" name="fecha_consulta" className="form-control" />
+                    <ErrorMessage name="fecha_consulta" component="div" className="error" />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="Hora">Hora</label>
+                    <Field type="time" name="Hora" className="form-control" />
+                    <ErrorMessage name="Hora" component="div" className="error" />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="observaciones">Observaciones</label>
+                    <Field 
+                      as="textarea" 
+                      name="observaciones" 
+                      className="form-control" 
+                      rows="4"
+                      placeholder="Ingrese las observaciones de la consulta..."
+                    />
+                    <ErrorMessage name="observaciones" component="div" className="error" />
+                  </div>
+                  <ModalFooter>
+                    <Button type="submit" color="primary" disabled={isSubmitting}>
+                      {isSubmitting ? "Creando..." : "Crear Consulta"}
+                    </Button>
+                    <Button color="secondary" onClick={() => setModalConsultaOpen(false)}>
                       Cancelar
                     </Button>
                   </ModalFooter>
