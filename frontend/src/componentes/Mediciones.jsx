@@ -60,15 +60,20 @@ export default function Mediciones({ idConsulta, idPaciente }) {
     sexo,
     } = datos;
 
+    // Validar que tenemos datos necesarios antes de calcular
+    if (!Peso || !Talla || !edad || !sexo) {
+      return; // No calcular si no hay datos suficientes
+    }
+
     const sumaPliegues =
-      parseFloat(tricipital) +
-      parseFloat(bicipital) +
-      parseFloat(subescapular) +
-      parseFloat(supraespinal) +
-      parseFloat(ileocrestal) +
-      parseFloat(abdominal) +
-      parseFloat(musloPliegue) +
-      parseFloat(pantorrillaPliegue);
+      parseFloat(tricipital || 0) +
+      parseFloat(bicipital || 0) +
+      parseFloat(subescapular || 0) +
+      parseFloat(supraespinal || 0) +
+      parseFloat(ileocrestal || 0) +
+      parseFloat(abdominal || 0) +
+      parseFloat(musloPliegue || 0) +
+      parseFloat(pantorrillaPliegue || 0);
 
     const imc = Peso && Talla ? Peso / Math.pow(Talla / 100, 2) : 0;
 
@@ -83,7 +88,7 @@ export default function Mediciones({ idConsulta, idPaciente }) {
 
     const porcentaje_masa_muscular = Peso ? (masaMuscularKg / Peso) * 100 : 0;
 
-    const masaOsea2 = 3.02 * ((Talla * Talla * biestiloideo * femoral * 400 /100000000) ** 0.712);
+    const masaOsea2 = 3.02 * ((Talla * Talla * (biestiloideo || 0) * (femoral || 0) * 400 /100000000) ** 0.712);
 
     const masaOsea = (masaOsea2 / Peso) * 100;
 
@@ -93,25 +98,23 @@ export default function Mediciones({ idConsulta, idPaciente }) {
 
     const masaResidual = (Peso - (masaGrasaKg + masaMuscularKg + masaOsea2)) * factor2;
 
-    ({
-      imc,
-      sumaPliegues,
-      porcentajeGrasa,
-      masaMuscularKg,
-      porcentaje_masa_muscular,
-      masaOsea,
-      masaResidual,
-    });
-
-    setResultados({
+    // Este estado debe mantener el formato de array para ser consistente
+    // con los datos que vienen del backend
+    const resultadoCalculado = {
       "Indice de masa corporal (IMC)": imc.toFixed(2),
       "Suma de pliegues": sumaPliegues.toFixed(2),
       "Porcentaje de grasa": porcentajeGrasa.toFixed(2),
-      "Masa muscular (kg)": porcentaje_masa_muscular.toFixed(2),
+      "Masa muscular (kg)": masaMuscularKg.toFixed(2),
       "Masa muscular %": porcentaje_masa_muscular.toFixed(2),
       "Masa osea %": masaOsea.toFixed(2),
       "Masa residual": masaResidual.toFixed(2),
-    });
+    };
+
+    // No sobrescribir resultados del backend, solo mostrar calculos temporales
+    // cuando no hay resultados guardados
+    if (!resultados || resultados.length === 0) {
+      setResultados([resultadoCalculado]);
+    }
   };
 
   const handleChange = (e) => {
@@ -166,15 +169,23 @@ export default function Mediciones({ idConsulta, idPaciente }) {
   };
 
   const enviarResultados = async (id_medicion) => {
+    // Primero calcular los resultados
+    const resultadosCalculados = calcularResultadosCompletos(datos);
+    
+    if (!resultadosCalculados) {
+      console.error("No se pudieron calcular los resultados");
+      return;
+    }
+
     const resultadosTransformados = {
       id_medicion: id_medicion, 
-      imc: resultados["Indice de masa corporal (IMC)"],
-      suma_pliegues: resultados["Suma de pliegues"],
-      porcentaje_grasa: resultados["Porcentaje de grasa"],
-      masa_muscular_kg: resultados["Masa muscular (kg)"],
-      porcentaje_masa_muscular: resultados["Masa muscular %"],
-      masa_osea: resultados["Masa osea %"],
-      masa_residual: resultados["Masa residual"],
+      imc: resultadosCalculados.imc,
+      suma_pliegues: resultadosCalculados.sumaPliegues,
+      porcentaje_grasa: resultadosCalculados.porcentajeGrasa,
+      masa_muscular_kg: resultadosCalculados.masaMuscularKg,
+      porcentaje_masa_muscular: resultadosCalculados.porcentaje_masa_muscular,
+      masa_osea: resultadosCalculados.masaOsea,
+      masa_residual: resultadosCalculados.masaResidual,
     };
   
     console.log("Resultados transformados para enviar al backend:", resultadosTransformados);
@@ -193,6 +204,74 @@ export default function Mediciones({ idConsulta, idPaciente }) {
       console.error("Error al guardar los resultados:", error);
       alert(`Error al guardar los resultados: ${error.message || "Por favor, inténtelo de nuevo."}`);
     }
+  };
+
+  // Función separada para calcular resultados y retornar valores
+  const calcularResultadosCompletos = (datos) => {
+    const {
+    Peso,
+    Talla,
+    "Pliegue subescapular": subescapular,
+    "Pliegue tricipital": tricipital,
+    "Pliegue bicipital": bicipital,
+    "Pliegue supraespinal": supraespinal,
+    "Pliegue ileocrestal": ileocrestal,
+    "Pliegue abdominal": abdominal,
+    "Pliegue muslo": musloPliegue,
+    "Pliegue pantorrilla": pantorrillaPliegue,
+    "Diametro biestiloideo": biestiloideo,
+    "Diametro femoral": femoral,
+    edad,
+    sexo,
+    } = datos;
+
+    // Validar que tenemos datos necesarios antes de calcular
+    if (!Peso || !Talla || !edad || !sexo) {
+      return null; // No calcular si no hay datos suficientes
+    }
+
+    const sumaPliegues =
+      parseFloat(tricipital || 0) +
+      parseFloat(bicipital || 0) +
+      parseFloat(subescapular || 0) +
+      parseFloat(supraespinal || 0) +
+      parseFloat(ileocrestal || 0) +
+      parseFloat(abdominal || 0) +
+      parseFloat(musloPliegue || 0) +
+      parseFloat(pantorrillaPliegue || 0);
+
+    const imc = Peso && Talla ? Peso / Math.pow(Talla / 100, 2) : 0;
+
+    const porcentajeGrasa = sumaPliegues * 0.153 + 5.783;
+
+    const masaMuscularKg =
+      0.244 * Peso +
+      7.8 * (Talla / 100) +
+      6.6 * sexoFactor(sexo) -
+      0.098 * edad -
+      3.3;
+
+    const porcentaje_masa_muscular = Peso ? (masaMuscularKg / Peso) * 100 : 0;
+
+    const masaOsea2 = 3.02 * ((Talla * Talla * (biestiloideo || 0) * (femoral || 0) * 400 /100000000) ** 0.712);
+
+    const masaOsea = (masaOsea2 / Peso) * 100;
+
+    const masaGrasaKg = (Peso * porcentajeGrasa) / 100;
+
+    const factor2 = sexo === "M" ? 0.209 : 0.241;
+
+    const masaResidual = (Peso - (masaGrasaKg + masaMuscularKg + masaOsea2)) * factor2;
+
+    return {
+      imc,
+      sumaPliegues,
+      porcentajeGrasa,
+      masaMuscularKg,
+      porcentaje_masa_muscular,
+      masaOsea,
+      masaResidual,
+    };
   };
     
   const transformMedicionesData = (data) => {
