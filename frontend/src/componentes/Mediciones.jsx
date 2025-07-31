@@ -261,20 +261,22 @@ export default function Mediciones({ idConsulta, idPaciente }) {
   useEffect(() => {
     const cargarResultados = async () => {
       try {
-        if (idConsulta) {
+        if (idConsulta && idPaciente) {
           const data = await obetenerresultadosPorPaciente(idPaciente);
           console.log("Resultados obtenidos desde el backend:", data);
-          if (data && data.length > 0) {
+          if (data && Array.isArray(data) && data.length > 0) {
             const resultadosTransformados = data.map((resultado) => transformarResultados(resultado));
-            setResultados(resultadosTransformados); // Actualiza el estado con todos los resultados transformados
+            setResultados(resultadosTransformados);
           } else {
-            console.error("No se encontraron resultados para el paciente.");
+            console.log("No se encontraron resultados para el paciente.");
+            setResultados([]); // Establece un array vacío
           }
         } else {
-          console.error("El ID de la consulta no está definido.");
+          console.error("El ID de la consulta o del paciente no está definido.");
         }
       } catch (error) {
         console.error("Error al cargar los resultados:", error);
+        setResultados([]); // En caso de error, establece un array vacío
       }
     };
   
@@ -284,15 +286,21 @@ export default function Mediciones({ idConsulta, idPaciente }) {
   useEffect(() => {
     const cargarMediciones = async () => {
       try {
-        if (idConsulta) {
+        if (idConsulta && idPaciente) {
           const medicionesRecuperadas = await obtenerMedicionesPorPaciente(idPaciente);
           console.log("Mediciones obtenidas desde el backend:", medicionesRecuperadas);
-          setMediciones(medicionesRecuperadas); // Actualiza el estado con las mediciones recuperadas
+          if (Array.isArray(medicionesRecuperadas)) {
+            setMediciones(medicionesRecuperadas);
+          } else {
+            console.log("No se encontraron mediciones para el paciente.");
+            setMediciones([]); // Establece un array vacío
+          }
         } else {
-          console.error("El ID de la consulta no está definido.");
+          console.error("El ID de la consulta o del paciente no está definido.");
         }
       } catch (error) {
         console.error("Error al cargar las mediciones:", error);
+        setMediciones([]); // En caso de error, establece un array vacío
       }
     };
   
@@ -556,14 +564,14 @@ return (
   <thead>
     <tr>
       <th>#</th>
-      {resultados.length > 0 &&
+      {resultados.length > 0 && Array.isArray(resultados) &&
         Object.keys(resultados[0]).map((indicador) => (
           <th key={`header-${indicador}`}>{indicador}</th>
         ))}
     </tr>
   </thead>
   <tbody>
-    {resultados.map((resultado, index) => (
+    {Array.isArray(resultados) && resultados.map((resultado, index) => (
       <tr key={`resultado-${index}`}>
         <td>{index + 1}</td>
         {Object.values(resultado).map((valor, i) => (
@@ -571,6 +579,13 @@ return (
         ))}
       </tr>
     ))}
+    {(!Array.isArray(resultados) || resultados.length === 0) && (
+      <tr>
+        <td colSpan="100%" style={{ textAlign: 'center', padding: '20px' }}>
+          No hay resultados disponibles para este paciente
+        </td>
+      </tr>
+    )}
   </tbody>
 </Table>
 
@@ -578,9 +593,12 @@ return (
   <thead>
     <tr>
       <th>Indicador</th>
-      {mediciones.map((medicion, index) => (
-        <th key={`header-${index}`}>Valor</th> 
+      {Array.isArray(mediciones) && mediciones.map((medicion, index) => (
+        <th key={`header-${index}`}>Medición {index + 1}</th> 
       ))}
+      {(!Array.isArray(mediciones) || mediciones.length === 0) && (
+        <th>Sin datos</th>
+      )}
     </tr>
   </thead>
   <tbody>
@@ -607,9 +625,13 @@ return (
     ].map(({ nombre, clave }) => (
       <tr key={clave}>
         <td><strong>{nombre}</strong></td> 
-        {mediciones.map((medicion, index) => (
-          <td key={`data-${index}-${clave}`}>{medicion[clave] || "N/A"}</td> 
-        ))}
+        {Array.isArray(mediciones) && mediciones.length > 0 ? (
+          mediciones.map((medicion, index) => (
+            <td key={`data-${index}-${clave}`}>{medicion[clave] || "N/A"}</td> 
+          ))
+        ) : (
+          <td>No hay datos</td>
+        )}
       </tr>
     ))}
   </tbody>
@@ -619,9 +641,15 @@ return (
   <h1 className="consulta-titulo">Grafico de Mediciones</h1>
 </div>
 <div className="mediciones-container"> 
-<ResponsiveContainer width="100%" height={400}>
-  <GraficoResultadosCompuesto resultados={resultados} />
-</ResponsiveContainer>
+{Array.isArray(resultados) && resultados.length > 0 ? (
+  <ResponsiveContainer width="100%" height={400}>
+    <GraficoResultadosCompuesto resultados={resultados} />
+  </ResponsiveContainer>
+) : (
+  <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
+    <p>No hay datos suficientes para mostrar el gráfico</p>
+  </div>
+)}
 </div>
 <Button
   className="col"

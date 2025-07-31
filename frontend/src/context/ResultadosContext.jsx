@@ -21,11 +21,16 @@ export const ResultadosProvider = ({ children }) => {
       const response = await obtenerResultadosPorPacienteRequest(id);
       const resultados = response?.data || response; 
       console.log("Resultados obtenidos del backend:", resultados);
-      setResultados(resultados || []);
-      return resultados || [];
+      
+      // Asegurar que siempre devolvemos un array
+      const resultadosArray = Array.isArray(resultados) ? resultados : [];
+      setResultados(resultadosArray);
+      return resultadosArray;
     } catch (error) {
       console.error("Error al obtener resultados por paciente:", error);
-      throw error;
+      // En caso de error 404 o cualquier otro, devolver array vacío
+      setResultados([]);
+      return [];
     }
   };
 

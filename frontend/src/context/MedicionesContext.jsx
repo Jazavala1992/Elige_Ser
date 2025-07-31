@@ -22,11 +22,16 @@ export const MedicionesProvider = ({ children }) => {
       const response = await obtenerMedicionesPorPacienteRequest(id);
       const mediciones = response?.data || response; // Ajusta según la estructura de la respuesta
       console.log("Mediciones obtenidas del backend:", mediciones);
-      setMediciones(mediciones || []);
-      return mediciones || [];
+      
+      // Asegurar que siempre devolvemos un array
+      const medicionesArray = Array.isArray(mediciones) ? mediciones : [];
+      setMediciones(medicionesArray);
+      return medicionesArray;
     } catch (error) {
       console.error("Error al obtener mediciones por paciente:", error);
-      throw error;
+      // En caso de error 404 o cualquier otro, devolver array vacío
+      setMediciones([]);
+      return [];
     }
   };
 
