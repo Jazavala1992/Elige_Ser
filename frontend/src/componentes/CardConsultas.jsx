@@ -20,8 +20,14 @@ function CardConsultas() {
     const fetchConsultas = async () => {
       try {
         setLoading(true);
-        const response = await obtenerConsultasRequest(idPaciente); 
-        setConsultas(response.data);
+        if (idPaciente) {
+          // Si hay ID de paciente, obtener consultas específicas
+          const response = await obtenerConsultasRequest(idPaciente); 
+          setConsultas(response.data);
+        } else {
+          // Si no hay ID, mostrar mensaje informativo o redirigir
+          setError("Seleccione un paciente para ver sus consultas.");
+        }
         setLoading(false);
       } catch (err) {
         console.error("Error al obtener las consultas:", err);
@@ -30,11 +36,7 @@ function CardConsultas() {
       }
     };
 
-    if (idPaciente) {
-      fetchConsultas();
-    } else {
-      console.error("ID del paciente no proporcionado");
-    }
+    fetchConsultas();
   }, [idPaciente, setConsultas]);
 
   const handleMediciones = (idConsulta) => {

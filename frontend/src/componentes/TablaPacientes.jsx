@@ -116,7 +116,7 @@ function TablaPacientes() {
         confirmButtonText: "Aceptar",
       }).then(() => {
         setModalConsultaOpen(false);
-        navigate("/consultas"); // Redirigir a la página de consultas
+        navigate(`/consultas/${pacienteParaConsulta.id_paciente}`); // Redirigir a las consultas del paciente específico
       });
     } catch (error) {
       console.error("Error al crear consulta:", error);
