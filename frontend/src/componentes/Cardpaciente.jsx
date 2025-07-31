@@ -40,6 +40,9 @@ function CardPaciente() {
   const handleCrearPaciente = async (values) => {
     try {
       console.log("Datos enviados al backend:", values); // Inspeccionar los datos
+      console.log("Token actual:", localStorage.getItem("token"));
+      console.log("User ID actual:", localStorage.getItem("userId"));
+      
       await crearPaciente(values); // Llamar a la función del contexto
 
       // Mostrar mensaje de éxito con SweetAlert2
@@ -54,12 +57,24 @@ function CardPaciente() {
       navigate("/pacientes"); // Redirigir a la nueva ruta
     } catch (error) {
       console.error("Error al crear paciente:", error);
+      console.error("Error detallado:", error.response?.data);
+      
+      let errorMessage = "Ocurrió un problema al registrar el paciente. Por favor, inténtalo nuevamente.";
+      
+      // Personalizar mensaje según el tipo de error
+      if (error.response?.status === 400) {
+        errorMessage = error.response.data?.message || "Error de validación en los datos del paciente.";
+      } else if (error.response?.status === 401) {
+        errorMessage = "Sesión expirada. Por favor, inicia sesión nuevamente.";
+      } else if (error.response?.status === 500) {
+        errorMessage = "Error interno del servidor. Contacta al administrador.";
+      }
 
       // Mostrar mensaje de error con SweetAlert2
       Swal.fire({
         icon: "error",
         title: "Error al crear paciente",
-        text: "Ocurrió un problema al registrar el paciente. Por favor, inténtalo nuevamente.",
+        text: errorMessage,
         confirmButtonText: "Aceptar",
       });
     }
@@ -123,16 +138,23 @@ function CardPaciente() {
                 </div>
                 <div className="form-group">
                   <label htmlFor="telefono">Teléfono</label>
-                  <Field
-                    type="text"
-                    name="telefono"
-                    className="form-control"
-                    onInput={(e) => {
-                      // Solo permitir números
-                      e.target.value = e.target.value.replace(/[^0-9]/g, '');
-                    }}
-                    placeholder="Ingrese solo números"
-                  />
+                  <Field name="telefono">
+                    {({ field, form }) => (
+                      <input
+                        {...field}
+                        type="text"
+                        className="form-control"
+                        placeholder="Ingrese solo números"
+                        onChange={(e) => {
+                          // Solo permitir números y actualizar Formik
+                          const value = e.target.value.replace(/[^0-9]/g, '');
+                          form.setFieldValue('telefono', value);
+                        }}
+                        onBlur={field.onBlur}
+                        value={field.value || ''}
+                      />
+                    )}
+                  </Field>
                   <ErrorMessage name="telefono" component="div" className="error" />
                 </div>
                 <div className="form-group">

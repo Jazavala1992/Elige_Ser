@@ -10,10 +10,15 @@ export const PacientesProvider = ({ children }) => {
 
   const crearPaciente = async (paciente) => {
     try {
+      console.log("Datos del paciente antes de enviar:", paciente);
       const response = await crearPacienteRequest(paciente);
+      console.log("Respuesta exitosa del servidor:", response.data);
       return response.data;
     } catch (error) {
-      console.error("Error al crear paciente:", error);
+      console.error("Error completo al crear paciente:", error);
+      console.error("Error response:", error.response?.data);
+      console.error("Error status:", error.response?.status);
+      console.error("Error message:", error.message);
       throw error;
     }
   }
