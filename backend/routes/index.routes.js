@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { pool, queryAdapter, DB_TYPE } from '../db_adapter.js';
+import { pool, queryAdapter } from '../db_adapter.js';
 import { verifyToken } from '../middlewares/authMiddleware.js';
 
 const router = Router();
@@ -180,6 +180,260 @@ router.delete('/public/mediciones/delete/:id', async (req, res) => {
         });
     } catch (error) {
         console.error('Error en ruta pública eliminar medición:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Ruta pública para actualizar mediciones
+router.put('/public/mediciones/update/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log('Ruta pública: Actualizando medición ID:', id);
+        console.log('Datos recibidos:', req.body);
+        
+        const {peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral} = req.body;
+        
+        const [result] = await queryAdapter.query(
+            `UPDATE mediciones SET peso = ?, talla = ?, pl_tricipital = ?, pl_bicipital = ?, pl_subescapular = ?, pl_supraespinal = ?, pl_suprailiaco = ?, pl_abdominal = ?, pl_muslo_medial = ?, pl_pantorrilla_medial = ?, per_brazo_reposo = ?, per_brazo_flex = ?, per_muslo_medio = ?, per_pantorrilla_medial = ?, per_cintura = ?, per_cadera = ?, diametro_femoral = ?, diametro_biestiloideo = ?, diametro_humeral = ? WHERE id_medicion = ?`,
+            [peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral, id]
+        );
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Medición no encontrada' });
+        }
+        
+        res.json({
+            message: 'Medición actualizada exitosamente',
+            id_medicion: id
+        });
+    } catch (error) {
+        console.error('Error en ruta pública actualizar medición:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Ruta pública para crear resultados
+router.post('/public/resultados/create', async (req, res) => {
+    try {
+        console.log('Ruta pública: Creando resultados');
+        console.log('Datos recibidos:', req.body);
+        
+        const {id_medicion, imc, suma_pliegues, porcentaje_grasa, masa_muscular_kg, porcentaje_masa_muscular, masa_osea, masa_residual} = req.body;
+        
+        const [result] = await queryAdapter.query(
+            `INSERT INTO resultados (id_medicion, imc, suma_pliegues, porcentaje_grasa, masa_muscular_kg, porcentaje_masa_muscular, masa_osea, masa_residual) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id_resultado`,
+            [id_medicion, imc, suma_pliegues, porcentaje_grasa, masa_muscular_kg, porcentaje_masa_muscular, masa_osea, masa_residual]
+        );
+        
+        const idResultado = result[0]?.id_resultado;
+        
+        res.status(201).json({
+            message: 'Resultados creados exitosamente',
+            id_resultado: idResultado
+        });
+    } catch (error) {
+        console.error('Error en ruta pública crear resultados:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Ruta pública para crear mediciones
+router.post('/public/mediciones/create', async (req, res) => {
+    try {
+        console.log('Ruta pública: Creando medición');
+        console.log('Datos recibidos:', req.body);
+        
+        const {id_paciente, peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral} = req.body;
+        
+        const [result] = await queryAdapter.query(
+            `INSERT INTO mediciones (id_paciente, peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id_medicion`,
+            [id_paciente, peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral]
+        );
+        
+        const idMedicion = result[0]?.id_medicion;
+        
+        res.status(201).json({
+            message: 'Medición creada exitosamente',
+            id_medicion: idMedicion
+        });
+    } catch (error) {
+        console.error('Error en ruta pública crear medición:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Ruta pública para logs
+router.post('/public/logs', async (req, res) => {
+    try {
+        console.log('Ruta pública: Registrando log');
+        console.log('Datos recibidos:', req.body);
+        
+        // Por ahora solo devolvemos éxito sin almacenar en BD
+        res.status(201).json({
+            message: 'Log registrado exitosamente'
+        });
+    } catch (error) {
+        console.error('Error en ruta pública logs:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ============= RUTAS PÚBLICAS PARA PACIENTES =============
+
+// Ruta pública para obtener pacientes por usuario
+router.get('/public/pacientes/usuario/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log('Ruta pública: Obteniendo pacientes para usuario ID:', id);
+        
+        const result = await queryAdapter.query('SELECT * FROM pacientes WHERE id_usuario = ?', [id]);
+        
+        res.json(result);
+    } catch (error) {
+        console.error('Error en ruta pública obtener pacientes:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Ruta pública para crear paciente
+router.post('/public/pacientes/create', async (req, res) => {
+    try {
+        console.log('Ruta pública: Creando paciente');
+        console.log('Datos recibidos:', req.body);
+        
+        const {nombre, apellido, fecha_nacimiento, genero, telefono, email, direccion, id_usuario} = req.body;
+        
+        const [result] = await queryAdapter.query(
+            `INSERT INTO pacientes (nombre, apellido, fecha_nacimiento, genero, telefono, email, direccion, id_usuario) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id_paciente`,
+            [nombre, apellido, fecha_nacimiento, genero, telefono, email, direccion, id_usuario]
+        );
+        
+        const idPaciente = result[0]?.id_paciente;
+        
+        res.status(201).json({
+            message: 'Paciente creado exitosamente',
+            id_paciente: idPaciente
+        });
+    } catch (error) {
+        console.error('Error en ruta pública crear paciente:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Ruta pública para actualizar paciente
+router.put('/public/pacientes/update/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log('Ruta pública: Actualizando paciente ID:', id);
+        console.log('Datos recibidos:', req.body);
+        
+        const {nombre, apellido, fecha_nacimiento, genero, telefono, email, direccion} = req.body;
+        
+        const [result] = await queryAdapter.query(
+            `UPDATE pacientes SET nombre = ?, apellido = ?, fecha_nacimiento = ?, genero = ?, telefono = ?, email = ?, direccion = ? WHERE id_paciente = ?`,
+            [nombre, apellido, fecha_nacimiento, genero, telefono, email, direccion, id]
+        );
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Paciente no encontrado' });
+        }
+        
+        res.json({
+            message: 'Paciente actualizado exitosamente',
+            id_paciente: id
+        });
+    } catch (error) {
+        console.error('Error en ruta pública actualizar paciente:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Ruta pública para eliminar paciente
+router.delete('/public/pacientes/delete/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log('Ruta pública: Eliminando paciente ID:', id);
+        
+        const [result] = await queryAdapter.query('DELETE FROM pacientes WHERE id_paciente = ?', [id]);
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Paciente no encontrado' });
+        }
+        
+        res.json({
+            message: 'Paciente eliminado exitosamente',
+            id_paciente: id
+        });
+    } catch (error) {
+        console.error('Error en ruta pública eliminar paciente:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ============= RUTAS PÚBLICAS PARA CONSULTAS =============
+
+// Ruta pública para obtener consultas por usuario
+router.get('/public/consultas/usuario/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log('Ruta pública: Obteniendo consultas para usuario ID:', id);
+        
+        const result = await queryAdapter.query('SELECT * FROM consultas WHERE id_usuario = ?', [id]);
+        
+        res.json(result);
+    } catch (error) {
+        console.error('Error en ruta pública obtener consultas:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Ruta pública para crear consulta
+router.post('/public/consultas/create', async (req, res) => {
+    try {
+        console.log('Ruta pública: Creando consulta');
+        console.log('Datos recibidos:', req.body);
+        
+        const {fecha, motivo, id_paciente, id_usuario} = req.body;
+        
+        const [result] = await queryAdapter.query(
+            `INSERT INTO consultas (fecha, motivo, id_paciente, id_usuario) 
+             VALUES (?, ?, ?, ?) RETURNING id_consulta`,
+            [fecha, motivo, id_paciente, id_usuario]
+        );
+        
+        const idConsulta = result[0]?.id_consulta;
+        
+        res.status(201).json({
+            message: 'Consulta creada exitosamente',
+            id_consulta: idConsulta
+        });
+    } catch (error) {
+        console.error('Error en ruta pública crear consulta:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Ruta pública para eliminar consulta
+router.delete('/public/consultas/delete/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log('Ruta pública: Eliminando consulta ID:', id);
+        
+        const [result] = await queryAdapter.query('DELETE FROM consultas WHERE id_consulta = ?', [id]);
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Consulta no encontrada' });
+        }
+        
+        res.json({
+            message: 'Consulta eliminada exitosamente',
+            id_consulta: id
+        });
+    } catch (error) {
+        console.error('Error en ruta pública eliminar consulta:', error);
         res.status(500).json({ error: error.message });
     }
 });

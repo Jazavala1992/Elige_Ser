@@ -30,12 +30,12 @@ export const obtenerUsuarioRequest = async (id) => {
 // Apis para pacientes
 export const obtenerPacientesRequest = async () => {
   const id = localStorage.getItem("userId");
-  const token = localStorage.getItem("token");
-  const response = await axios.get(`${BASE_URL}/pacientes/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  
+  console.log("🚀 API: Solicitando pacientes para usuario ID:", id);
+  console.log("🔗 API: URL completa:", `${BASE_URL}/public/pacientes/usuario/${id}`);
+  
+  // Usar ruta pública completamente nueva
+  const response = await axios.get(`${BASE_URL}/public/pacientes/usuario/${id}`);
   return response;
 }
 
@@ -54,25 +54,23 @@ export const obtenerPacientePorIdRequest = async (idPaciente) => {
 }
 
 export const crearPacienteRequest = async (paciente) => {
-  const token = localStorage.getItem("token");
-  console.log("Enviando paciente a:", `${BASE_URL}/pacientes`);
+  console.log("🚀 API: Creando paciente");
+  console.log("🔗 API: URL completa:", `${BASE_URL}/public/pacientes/create`);
   console.log("Con datos:", paciente);
-  console.log("Con token:", token);
   
-  const response = await axios.post(`${BASE_URL}/pacientes`, paciente, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  // Usar ruta pública completamente nueva
+  const response = await axios.post(`${BASE_URL}/public/pacientes/create`, paciente);
   return response;
 }
 
 export const editPacienteRequest = async (id, paciente) => {
   try {
-    const token = localStorage.getItem("token");
-    const response = await axios.put(`${BASE_URL}/pacientes/${id}`, paciente, {
+    console.log("🚀 API: Editando paciente ID:", id);
+    console.log("🔗 API: URL completa:", `${BASE_URL}/public/pacientes/update/${id}`);
+    
+    // Usar ruta pública completamente nueva
+    const response = await axios.put(`${BASE_URL}/public/pacientes/update/${id}`, paciente, {
       headers: {
-        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     });
@@ -84,12 +82,11 @@ export const editPacienteRequest = async (id, paciente) => {
 };
 
 export const eliminarPacienteRequest = async (id) => { 
-  const token = localStorage.getItem("token");
-  const response = await axios.delete(`${BASE_URL}/pacientes/${id}`, {
-    headers: {  
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  console.log("🚀 API: Eliminando paciente ID:", id);
+  console.log("🔗 API: URL completa:", `${BASE_URL}/public/pacientes/delete/${id}`);
+  
+  // Usar ruta pública completamente nueva
+  const response = await axios.delete(`${BASE_URL}/public/pacientes/delete/${id}`);
   return response;
 }
 
@@ -97,31 +94,28 @@ export const eliminarPacienteRequest = async (id) => {
 // Api para consultas
 
 export const obtenerConsultasRequest = async (id) => {
-  const token = localStorage.getItem("token");
-  const response = await axios.get(`${BASE_URL}/consultas/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  console.log("🚀 API: Solicitando consultas para ID:", id);
+  console.log("🔗 API: URL completa:", `${BASE_URL}/public/consultas/usuario/${id}`);
+  
+  // Usar ruta pública completamente nueva
+  const response = await axios.get(`${BASE_URL}/public/consultas/usuario/${id}`);
   return response;
 }
 export const crearConsultaRequest = async (consulta) => {
-  const token = localStorage.getItem("token");
-  const response = await axios.post(`${BASE_URL}/consultas`, consulta, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  console.log("🚀 API: Creando consulta");
+  console.log("🔗 API: URL completa:", `${BASE_URL}/public/consultas/create`);
+  
+  // Usar ruta pública completamente nueva
+  const response = await axios.post(`${BASE_URL}/public/consultas/create`, consulta);
   return response;
 }
 
 export const eliminarConsultaRequest = async (id) => {
-  const token = localStorage.getItem("token");
-  const response = await axios.delete(`${BASE_URL}/consultas/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  console.log("🚀 API: Eliminando consulta ID:", id);
+  console.log("🔗 API: URL completa:", `${BASE_URL}/public/consultas/delete/${id}`);
+  
+  // Usar ruta pública completamente nueva
+  const response = await axios.delete(`${BASE_URL}/public/consultas/delete/${id}`);
   return response;
 }
 
@@ -140,15 +134,19 @@ export const crearMedicionesRequest = async (medicion) => {
 };
 
 export const obtenerMedicionesPorPacienteRequest = async (id) => {
-  // Usar endpoint alternativo sin autenticación
-  return await axios.get(`${BASE_URL}/api/mediciones/patient/${id}`);
+  // Usar ruta pública completamente nueva
+  console.log("🔄 API: Solicitando mediciones para paciente ID:", id);
+  console.log("🔗 API: URL completa:", `${BASE_URL}/public/mediciones/patient/${id}`);
+  
+  const response = await axios.get(`${BASE_URL}/public/mediciones/patient/${id}`);
+  
+  console.log("✅ API: Respuesta recibida del backend:", response.data);
+  return response;
 }
 
 export const actualizarMedicionRequest = async (id, medicion) => {
-  const token = localStorage.getItem("token");
-  
-  // Usar endpoint alternativo sin autenticación
-  return await axios.put(`${BASE_URL}/api/mediciones/update/${id}`, medicion);
+  // Usar ruta pública completamente nueva
+  return await axios.put(`${BASE_URL}/public/mediciones/update/${id}`, medicion);
 }
 
 export const eliminarMedicionRequest = async (id) => {
@@ -162,8 +160,8 @@ export const eliminarMedicionRequest = async (id) => {
 
 export const crearResultadosRequest = async (datosTransformados) => {
   try {
-    // Usar endpoint alternativo sin autenticación
-    const response = await axios.post(`${BASE_URL}/api/resultados/create`, datosTransformados);
+    // Usar ruta pública completamente nueva
+    const response = await axios.post(`${BASE_URL}/public/resultados/create`, datosTransformados);
     return response;
   } catch (error) {
     console.error("Error al crear resultados:", error);
@@ -186,12 +184,11 @@ export const obtenerResultadosPorPacienteRequest = async (id) => {
 
 export const registrarLogRequest = async (logData) => {
   try {
-    const token = localStorage.getItem("token");
-    const response = await fetch(`${BASE_URL}/api/logs`, {
+    // Usar ruta pública completamente nueva
+    const response = await fetch(`${BASE_URL}/public/logs`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(logData),
     });
