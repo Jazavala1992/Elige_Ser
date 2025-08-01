@@ -37,11 +37,24 @@ export const loginUsuario = async (req, res) => {
     }
 
     // Login temporal para testing mientras se configuran las variables de entorno
+    // Esta credencial temporal permite probar la aplicación cuando la DB no está disponible
     if (email === "admin@admin.com" && password === "admin123") {
+      console.log("⚠️ Usando autenticación temporal para:", email);
       return res.status(200).json({
         success: true,
         token: "temporary-admin-token",
         user: { id: 1, nombre: "Admin", username: "admin", email: "admin@admin.com" },
+        message: "Login temporal - configurar variables de entorno DB"
+      });
+    }
+    
+    // También se puede agregar más cuentas temporales si es necesario
+    if (email === "test@test.com" && password === "test123") {
+      console.log("⚠️ Usando autenticación temporal para:", email);
+      return res.status(200).json({
+        success: true,
+        token: "temporary-test-token",
+        user: { id: 2, nombre: "Test User", username: "testuser", email: "test@test.com" },
         message: "Login temporal - configurar variables de entorno DB"
       });
     }
