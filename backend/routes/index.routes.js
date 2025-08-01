@@ -163,6 +163,53 @@ router.get('/test-medicion-insert', async (req, res) => {
     }
 });
 
+// Test POST como GET para debug
+router.get('/test-post-medicion/:id_paciente/:peso/:talla', async (req, res) => {
+    try {
+        console.log('🔧 Test POST como GET - Creando medición');
+        
+        const {id_paciente, peso, talla} = req.params;
+        console.log('📝 Datos recibidos:', {id_paciente, peso, talla});
+        
+        // Primero crear una consulta para el paciente
+        const today = new Date().toISOString().split('T')[0];
+        
+        console.log('📅 Creando consulta para fecha:', today);
+        const [consultaResult] = await queryAdapter.query(
+            'INSERT INTO consultas (id_paciente, fecha_consulta, observaciones) VALUES (?, ?, ?) RETURNING id_consulta',
+            [id_paciente, today, 'Consulta creada automáticamente para nueva medición']
+        );
+        
+        const idConsulta = consultaResult[0]?.id_consulta;
+        console.log('✅ Consulta creada con ID:', idConsulta);
+        
+        // Crear la medición asociada a la consulta
+        console.log('📏 Creando medición...');
+        const [result] = await queryAdapter.query(
+            'INSERT INTO mediciones (id_consulta, peso, talla) VALUES (?, ?, ?) RETURNING id_medicion',
+            [idConsulta, peso, talla]
+        );
+        
+        const idMedicion = result[0]?.id_medicion;
+        console.log('✅ Medición creada con ID:', idMedicion);
+        
+        res.json({
+            success: true,
+            message: 'Medición creada exitosamente vía GET',
+            id_consulta: idConsulta,
+            id_medicion: idMedicion,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('❌ Error en test GET medición:', error);
+        res.status(500).json({ 
+            success: false,
+            error: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
 router.get('/ping', async (req, res) => {
     try {
         const startTime = Date.now();
