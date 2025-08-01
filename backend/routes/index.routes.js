@@ -297,40 +297,54 @@ router.get('/public/mediciones/patient/:id', async (req, res) => {
 
 router.post('/public/mediciones/create', async (req, res) => {
     try {
-        console.log('Ruta pública: Creando medición');
-        console.log('Datos recibidos:', req.body);
+        console.log('🔧 Ruta pública: Creando medición');
+        console.log('📝 Datos recibidos:', req.body);
         
-        const {id_paciente, peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral} = req.body;
+        const {id_paciente, peso, talla} = req.body; // Simplificado por ahora
         
-        // Primero crear una consulta para el paciente (la medición requiere una consulta)
-        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+        // Validar datos mínimos
+        if (!id_paciente || !peso || !talla) {
+            return res.status(400).json({
+                error: 'Faltan datos requeridos: id_paciente, peso, talla'
+            });
+        }
         
+        // Primero crear una consulta para el paciente
+        const today = new Date().toISOString().split('T')[0];
+        
+        console.log('📅 Creando consulta para fecha:', today);
         const [consultaResult] = await queryAdapter.query(
-            `INSERT INTO consultas (id_paciente, fecha_consulta, observaciones) 
-             VALUES (?, ?, ?) RETURNING id_consulta`,
+            'INSERT INTO consultas (id_paciente, fecha_consulta, observaciones) VALUES (?, ?, ?) RETURNING id_consulta',
             [id_paciente, today, 'Consulta creada automáticamente para nueva medición']
         );
         
         const idConsulta = consultaResult[0]?.id_consulta;
-        console.log('Consulta creada con ID:', idConsulta);
+        console.log('✅ Consulta creada con ID:', idConsulta);
         
-        // Ahora crear la medición asociada a la consulta
+        // Crear la medición asociada a la consulta
+        console.log('📏 Creando medición...');
         const [result] = await queryAdapter.query(
-            `INSERT INTO mediciones (id_consulta, peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id_medicion`,
-            [idConsulta, peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral]
+            'INSERT INTO mediciones (id_consulta, peso, talla) VALUES (?, ?, ?) RETURNING id_medicion',
+            [idConsulta, peso, talla]
         );
         
-        // Para PostgreSQL el ID estará en result[0].id_medicion
         const idMedicion = result[0]?.id_medicion;
+        console.log('✅ Medición creada con ID:', idMedicion);
         
         res.status(201).json({
+            success: true,
             message: 'Medición creada exitosamente',
-            id_medicion: idMedicion
+            id_consulta: idConsulta,
+            id_medicion: idMedicion,
+            timestamp: new Date().toISOString()
         });
     } catch (error) {
-        console.error('Error en ruta pública crear medición:', error);
-        res.status(500).json({ error: error.message });
+        console.error('❌ Error en ruta pública crear medición:', error);
+        res.status(500).json({ 
+            success: false,
+            error: error.message,
+            timestamp: new Date().toISOString()
+        });
     }
 });
 
