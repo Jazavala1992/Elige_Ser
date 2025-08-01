@@ -22,16 +22,8 @@ export const obtenerUsuarioRequest = async (id) => {
   const token = localStorage.getItem("token");
   console.log("Token enviado:", token);
   
-  // Usar endpoint temporal sin autenticación
-  if (id === "1" || id === 1) {
-    return await axios.get(`${BASE_URL}/usuario-temp/1`);
-  }
-  
-  return await axios.get(`${BASE_URL}/usuario/${id}`, {
-      headers: {
-          Authorization: `Bearer ${token}`,
-      },
-  });
+  // Usar endpoint temporal sin autenticación para todos los usuarios
+  return await axios.get(`${BASE_URL}/usuario-temp/${id}`);
 };
 
 // Apis para pacientes

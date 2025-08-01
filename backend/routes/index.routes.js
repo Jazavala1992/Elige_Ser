@@ -343,4 +343,33 @@ router.get('/usuario-temp/1', async (req, res) => {
     }
 });
 
+// Endpoint temporal para listar todos los usuarios
+router.get('/usuarios-temp', async (req, res) => {
+    try {
+        const [result] = await queryAdapter.query('SELECT id_usuario, nombre, apellido_paterno, email FROM usuarios');
+        res.json({
+            success: true,
+            usuarios: result,
+            count: result.length
+        });
+    } catch (error) {
+        console.error("Error en el servidor:", error);
+        res.status(500).json({ message: 'Error interno del servidor', error: error.message });
+    }
+});
+
+// Endpoint temporal para obtener cualquier usuario por ID
+router.get('/usuario-temp/:id', async (req, res) => {
+    try {
+        const [result] = await queryAdapter.query('SELECT * FROM usuarios WHERE id_usuario = ?', [req.params.id]);
+        if (result.length === 0) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+        res.json(result[0]);
+    } catch (error) {
+        console.error("Error en el servidor:", error);
+        res.status(500).json({ message: 'Error interno del servidor', error: error.message });
+    }
+});
+
 export default router;
