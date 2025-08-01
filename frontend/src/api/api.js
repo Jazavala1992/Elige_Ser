@@ -42,8 +42,14 @@ export const obtenerPacientesRequest = async () => {
 export const obtenerPacientePorIdRequest = async (idPaciente) => {
   const token = localStorage.getItem("token");
   
+  console.log("🚀 API: Solicitando paciente con ID:", idPaciente);
+  console.log("🔗 API: URL completa:", `${BASE_URL}/public/paciente/${idPaciente}`);
+  
   // Usar ruta pública completamente nueva
   const response = await axios.get(`${BASE_URL}/public/paciente/${idPaciente}`);
+  
+  console.log("✅ API: Respuesta recibida del backend:", response);
+  
   return response;
 }
 

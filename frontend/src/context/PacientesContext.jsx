@@ -49,10 +49,20 @@ export const PacientesProvider = ({ children }) => {
 
   const obtenerPacientePorId = async (idPaciente) => {
     try {
+      console.log("🔍 PacientesContext: Obteniendo paciente con ID:", idPaciente);
       const response = await obtenerPacientePorIdRequest(idPaciente);
-      return response.data.paciente;
+      console.log("📦 PacientesContext: Respuesta completa del backend:", response);
+      console.log("👤 PacientesContext: Datos del paciente:", response.data);
+      console.log("🎯 PacientesContext: Paciente extraído:", response.data.paciente);
+      
+      if (response.data && response.data.paciente) {
+        return response.data.paciente;
+      } else {
+        console.warn("⚠️ PacientesContext: Formato de respuesta inesperado");
+        return null;
+      }
     } catch (error) {
-      console.error("Error al obtener paciente por ID:", error);
+      console.error("❌ PacientesContext: Error al obtener paciente por ID:", error);
       throw error;
     }
   };
