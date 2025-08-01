@@ -36,6 +36,16 @@ export const loginUsuario = async (req, res) => {
       return res.status(400).json({ success: false, message: "Email y contraseña son requeridos" });
     }
 
+    // Login temporal para testing mientras se configuran las variables de entorno
+    if (email === "admin@admin.com" && password === "admin123") {
+      return res.status(200).json({
+        success: true,
+        token: "temporary-admin-token",
+        user: { id: 1, nombre: "Admin", username: "admin", email: "admin@admin.com" },
+        message: "Login temporal - configurar variables de entorno DB"
+      });
+    }
+
     // Buscar el usuario por email
     const [result] = await pool.query("SELECT * FROM Usuarios WHERE email = ?", [email]);
 
@@ -71,6 +81,20 @@ export const loginUsuario = async (req, res) => {
     });
   } catch (error) {
     console.error("Error en el servidor:", error);
+    
+    // Si es un error de conexión a DB y tenemos credenciales de admin, permitir login temporal
+    if (error.code === 'PROTOCOL_CONNECTION_LOST' || error.code === 'ER_ACCESS_DENIED_ERROR') {
+      const { email, password } = req.body;
+      if (email === "admin@admin.com" && password === "admin123") {
+        return res.status(200).json({
+          success: true,
+          token: "temporary-admin-token-db-error",
+          user: { id: 1, nombre: "Admin", username: "admin", email: "admin@admin.com" },
+          message: "Login temporal - error de base de datos"
+        });
+      }
+    }
+    
     return res.status(500).json({ success: false, message: "Error interno del servidor", error: error.message });
   }
 };
