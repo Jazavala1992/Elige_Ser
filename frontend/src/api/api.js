@@ -149,23 +149,23 @@ export const obtenerMedicionesPorPacienteRequest = async (id) => {
 export const actualizarMedicionRequest = async (id, medicion) => {
   const token = localStorage.getItem("token");
   
-  // Usar endpoint temporal sin autenticación
-  return await axios.put(`${BASE_URL}/mediciones-temp/${id}`, medicion);
+  // Usar endpoint alternativo sin autenticación
+  return await axios.put(`${BASE_URL}/api/mediciones/update/${id}`, medicion);
 }
 
 export const eliminarMedicionRequest = async (id) => {
   const token = localStorage.getItem("token");
   
-  // Usar endpoint temporal sin autenticación
-  return await axios.delete(`${BASE_URL}/mediciones-temp/${id}`);
+  // Usar endpoint alternativo sin autenticación
+  return await axios.delete(`${BASE_URL}/api/mediciones/delete/${id}`);
 }
 
 // Api para resultados
 
 export const crearResultadosRequest = async (datosTransformados) => {
   try {
-    // Usar endpoint temporal sin autenticación en todos los casos
-    const response = await axios.post(`${BASE_URL}/resultados-temp`, datosTransformados);
+    // Usar endpoint alternativo sin autenticación
+    const response = await axios.post(`${BASE_URL}/api/resultados/create`, datosTransformados);
     return response;
   } catch (error) {
     console.error("Error al crear resultados:", error);
@@ -175,8 +175,8 @@ export const crearResultadosRequest = async (datosTransformados) => {
 
 export const obtenerResultadosPorPacienteRequest = async (id) => {
   try {
-    // Usar endpoint temporal sin autenticación en todos los casos
-    const response = await axios.get(`${BASE_URL}/resultados-temp/paciente/${id}`);
+    // Usar endpoint alternativo sin autenticación
+    const response = await axios.get(`${BASE_URL}/api/resultados/patient/${id}`);
     return response;
   } catch (error) {
     console.error("Error al obtener resultados por paciente:", error);
