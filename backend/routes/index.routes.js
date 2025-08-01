@@ -3,6 +3,7 @@ import { pool, queryAdapter } from '../db_adapter.js';
 import { verifyToken } from '../middlewares/authMiddleware.js';
 
 const router = Router();
+const DB_TYPE = 'postgres'; // Definir tipo de base de datos
 
 // Ruta de test para debug de PostgreSQL
 router.get('/test-db', async (req, res) => {
@@ -342,32 +343,6 @@ router.post('/public/resultados/create', async (req, res) => {
     }
 });
 
-// Ruta pública para crear mediciones
-router.post('/public/mediciones/create', async (req, res) => {
-    try {
-        console.log('Ruta pública: Creando medición');
-        console.log('Datos recibidos:', req.body);
-        
-        const {id_paciente, peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral} = req.body;
-        
-        const [result] = await queryAdapter.query(
-            `INSERT INTO mediciones (id_paciente, peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id_medicion`,
-            [id_paciente, peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral]
-        );
-        
-        const idMedicion = result[0]?.id_medicion;
-        
-        res.status(201).json({
-            message: 'Medición creada exitosamente',
-            id_medicion: idMedicion
-        });
-    } catch (error) {
-        console.error('Error en ruta pública crear medición:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
 // Ruta pública para logs
 router.post('/public/logs', async (req, res) => {
     try {
@@ -407,12 +382,12 @@ router.post('/public/pacientes/create', async (req, res) => {
         console.log('Ruta pública: Creando paciente');
         console.log('Datos recibidos:', req.body);
         
-        const {nombre, apellido, fecha_nacimiento, genero, telefono, email, direccion, id_usuario} = req.body;
+        const {nombre, fecha_nacimiento, sexo, telefono, ocupacion, nivel_actividad, objetivo, horas_sueno, habitos, antecedentes, id_usuario} = req.body;
         
         const [result] = await queryAdapter.query(
-            `INSERT INTO pacientes (nombre, apellido, fecha_nacimiento, genero, telefono, email, direccion, id_usuario) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id_paciente`,
-            [nombre, apellido, fecha_nacimiento, genero, telefono, email, direccion, id_usuario]
+            `INSERT INTO pacientes (nombre, fecha_nacimiento, sexo, telefono, ocupacion, nivel_actividad, objetivo, horas_sueno, habitos, antecedentes, id_usuario) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id_paciente`,
+            [nombre, fecha_nacimiento, sexo, telefono, ocupacion, nivel_actividad, objetivo, horas_sueno, habitos, antecedentes, id_usuario]
         );
         
         const idPaciente = result[0]?.id_paciente;
@@ -434,11 +409,11 @@ router.put('/public/pacientes/update/:id', async (req, res) => {
         console.log('Ruta pública: Actualizando paciente ID:', id);
         console.log('Datos recibidos:', req.body);
         
-        const {nombre, apellido, fecha_nacimiento, genero, telefono, email, direccion} = req.body;
+        const {nombre, fecha_nacimiento, sexo, telefono, ocupacion, nivel_actividad, objetivo, horas_sueno, habitos, antecedentes} = req.body;
         
         const [result] = await queryAdapter.query(
-            `UPDATE pacientes SET nombre = ?, apellido = ?, fecha_nacimiento = ?, genero = ?, telefono = ?, email = ?, direccion = ? WHERE id_paciente = ?`,
-            [nombre, apellido, fecha_nacimiento, genero, telefono, email, direccion, id]
+            `UPDATE pacientes SET nombre = ?, fecha_nacimiento = ?, sexo = ?, telefono = ?, ocupacion = ?, nivel_actividad = ?, objetivo = ?, horas_sueno = ?, habitos = ?, antecedentes = ? WHERE id_paciente = ?`,
+            [nombre, fecha_nacimiento, sexo, telefono, ocupacion, nivel_actividad, objetivo, horas_sueno, habitos, antecedentes, id]
         );
         
         if (result.affectedRows === 0) {
