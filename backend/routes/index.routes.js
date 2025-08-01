@@ -235,11 +235,23 @@ router.post('/public/mediciones/create', async (req, res) => {
         
         const {id_paciente, peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral} = req.body;
         
-        // Usar sintaxis universal con queryAdapter
+        // Primero crear una consulta para el paciente (la medición requiere una consulta)
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+        
+        const [consultaResult] = await queryAdapter.query(
+            `INSERT INTO consultas (id_paciente, fecha_consulta, observaciones) 
+             VALUES (?, ?, ?) RETURNING id_consulta`,
+            [id_paciente, today, 'Consulta creada automáticamente para nueva medición']
+        );
+        
+        const idConsulta = consultaResult[0]?.id_consulta;
+        console.log('Consulta creada con ID:', idConsulta);
+        
+        // Ahora crear la medición asociada a la consulta
         const [result] = await queryAdapter.query(
-            `INSERT INTO mediciones (id_paciente, peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral) 
+            `INSERT INTO mediciones (id_consulta, peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral) 
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id_medicion`,
-            [id_paciente, peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral]
+            [idConsulta, peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral]
         );
         
         // Para PostgreSQL el ID estará en result[0].id_medicion
@@ -473,7 +485,14 @@ router.get('/public/consultas/usuario/:id', async (req, res) => {
         const { id } = req.params;
         console.log('Ruta pública: Obteniendo consultas para usuario ID:', id);
         
-        const result = await queryAdapter.query('SELECT * FROM consultas WHERE id_usuario = ?', [id]);
+        // JOIN con pacientes para obtener consultas del usuario
+        const [result] = await queryAdapter.query(`
+            SELECT c.*, p.nombre as nombre_paciente 
+            FROM consultas c
+            INNER JOIN pacientes p ON c.id_paciente = p.id_paciente
+            WHERE p.id_usuario = ?
+            ORDER BY c.fecha_consulta DESC
+        `, [id]);
         
         res.json(result);
     } catch (error) {
@@ -488,12 +507,12 @@ router.post('/public/consultas/create', async (req, res) => {
         console.log('Ruta pública: Creando consulta');
         console.log('Datos recibidos:', req.body);
         
-        const {fecha, motivo, id_paciente, id_usuario} = req.body;
+        const {fecha_consulta, observaciones, id_paciente} = req.body;
         
         const [result] = await queryAdapter.query(
-            `INSERT INTO consultas (fecha, motivo, id_paciente, id_usuario) 
-             VALUES (?, ?, ?, ?) RETURNING id_consulta`,
-            [fecha, motivo, id_paciente, id_usuario]
+            `INSERT INTO consultas (fecha_consulta, observaciones, id_paciente) 
+             VALUES (?, ?, ?) RETURNING id_consulta`,
+            [fecha_consulta, observaciones, id_paciente]
         );
         
         const idConsulta = result[0]?.id_consulta;
