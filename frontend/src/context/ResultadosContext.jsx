@@ -16,7 +16,7 @@ export const ResultadosProvider = ({ children }) => {
     }
   };
 
-  const obetenerresultadosPorPaciente = async (id) => {
+  const obtenerResultadosPorPaciente = async (id) => {
     try {
       const response = await obtenerResultadosPorPacienteRequest(id);
       const resultados = response?.data || response; 
@@ -35,7 +35,7 @@ export const ResultadosProvider = ({ children }) => {
   };
 
   return (
-    <ResultadosContext.Provider value={{ resultadoContext, setResultados, crearResultados, obetenerresultadosPorPaciente }}>
+    <ResultadosContext.Provider value={{ resultadoContext, setResultados, crearResultados, obtenerResultadosPorPaciente }}>
       {children}
     </ResultadosContext.Provider>
   );

@@ -130,9 +130,15 @@ export const obtenerMedicionesPorPacienteRequest = async (id) => {
 
 export const crearResultadosRequest = async (datosTransformados) => {
   try {
+    // Usar endpoint temporal sin autenticación en desarrollo
+    if (import.meta.env.MODE === 'development') {
+      const response = await axios.post(`${BASE_URL}/resultados-temp`, datosTransformados);
+      return response;
+    }
+    
     const response = await axios.post(`${BASE_URL}/resultados`, datosTransformados, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`, // Asegúrate de que el token esté almacenado
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
     });
     return response;
@@ -144,6 +150,12 @@ export const crearResultadosRequest = async (datosTransformados) => {
 
 export const obtenerResultadosPorPacienteRequest = async (id) => {
   const token = localStorage.getItem("token");
+  
+  // Usar endpoint temporal sin autenticación en desarrollo
+  if (import.meta.env.MODE === 'development') {
+    return await axios.get(`${BASE_URL}/resultados-temp/paciente/${id}`);
+  }
+  
   return await axios.get(`${BASE_URL}/resultados/paciente/${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,

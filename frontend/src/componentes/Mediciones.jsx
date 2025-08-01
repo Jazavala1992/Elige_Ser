@@ -11,7 +11,7 @@ import jsPDF from "jspdf";
 
 export default function Mediciones({ idConsulta, idPaciente }) {
   const { crearMediciones, medicion, obtenerMedicionesPorPaciente } = useMediciones();
-  const { crearResultados, resultadoContext, obetenerresultadosPorPaciente  } = useResultados();
+  const { crearResultados, resultadoContext, obtenerResultadosPorPaciente  } = useResultados();
   
   
 
@@ -148,6 +148,9 @@ export default function Mediciones({ idConsulta, idPaciente }) {
       const id_medicion = response?.body?.medicion?.id_medicion; 
       if (id_medicion) {
         await enviarResultados(id_medicion);
+        // Recargar mediciones y resultados después de guardar
+        await cargarMediciones();
+        await cargarResultados();
       } else {
         console.error("No se pudo obtener id_medicion de la respuesta.");
       }
@@ -200,6 +203,9 @@ export default function Mediciones({ idConsulta, idPaciente }) {
         showConfirmButton: true,
         timer: 1500
       });
+      
+      // Recargar resultados después de guardar
+      await cargarResultados();
     } catch (error) {
       console.error("Error al guardar los resultados:", error);
       alert(`Error al guardar los resultados: ${error.message || "Por favor, inténtelo de nuevo."}`);
@@ -336,60 +342,58 @@ export default function Mediciones({ idConsulta, idPaciente }) {
 
   const medicionTransformada = medicion.length > 0 ? transformMedicionesData([medicion[0]])[0] : {};
   
+  // Función para cargar resultados
+  const cargarResultados = async () => {
+    try {
+      if (idConsulta && idPaciente) {
+        const data = await obtenerResultadosPorPaciente(idPaciente);
+        console.log("Resultados obtenidos desde el backend:", data);
+        if (data && Array.isArray(data) && data.length > 0) {
+          const resultadosTransformados = data.map((resultado) => transformarResultados(resultado));
+          setResultados(resultadosTransformados);
+        } else {
+          console.log("No se encontraron resultados para el paciente.");
+          setResultados([]); // Establece un array vacío
+        }
+      } else {
+        console.error("El ID de la consulta o del paciente no está definido.");
+      }
+    } catch (error) {
+      console.error("Error al cargar los resultados:", error);
+      setResultados([]); // En caso de error, establece un array vacío
+    }
+  };
+
+  // Función para cargar mediciones
+  const cargarMediciones = async () => {
+    try {
+      if (idConsulta && idPaciente) {
+        const medicionesRecuperadas = await obtenerMedicionesPorPaciente(idPaciente);
+        console.log("Mediciones obtenidas desde el backend:", medicionesRecuperadas);
+        if (Array.isArray(medicionesRecuperadas)) {
+          setMediciones(medicionesRecuperadas);
+        } else {
+          console.log("No se encontraron mediciones para el paciente.");
+          setMediciones([]); // Establece un array vacío
+        }
+      } else {
+        console.error("El ID de la consulta o del paciente no está definido.");
+      }
+    } catch (error) {
+      console.error("Error al cargar las mediciones:", error);
+      setMediciones([]); // En caso de error, establece un array vacío
+    }
+  };
 
   useEffect(() => {
-    const cargarResultados = async () => {
-      try {
-        if (idConsulta && idPaciente) {
-          const data = await obetenerresultadosPorPaciente(idPaciente);
-          console.log("Resultados obtenidos desde el backend:", data);
-          if (data && Array.isArray(data) && data.length > 0) {
-            const resultadosTransformados = data.map((resultado) => transformarResultados(resultado));
-            setResultados(resultadosTransformados);
-          } else {
-            console.log("No se encontraron resultados para el paciente.");
-            setResultados([]); // Establece un array vacío
-          }
-        } else {
-          console.error("El ID de la consulta o del paciente no está definido.");
-        }
-      } catch (error) {
-        console.error("Error al cargar los resultados:", error);
-        setResultados([]); // En caso de error, establece un array vacío
-      }
-    };
-  
     cargarResultados();
   }, [idPaciente]);
   
   useEffect(() => {
-    const cargarMediciones = async () => {
-      try {
-        if (idConsulta && idPaciente) {
-          const medicionesRecuperadas = await obtenerMedicionesPorPaciente(idPaciente);
-          console.log("Mediciones obtenidas desde el backend:", medicionesRecuperadas);
-          if (Array.isArray(medicionesRecuperadas)) {
-            setMediciones(medicionesRecuperadas);
-          } else {
-            console.log("No se encontraron mediciones para el paciente.");
-            setMediciones([]); // Establece un array vacío
-          }
-        } else {
-          console.error("El ID de la consulta o del paciente no está definido.");
-        }
-      } catch (error) {
-        console.error("Error al cargar las mediciones:", error);
-        setMediciones([]); // En caso de error, establece un array vacío
-      }
-    };
-  
     cargarMediciones();
   }, [idPaciente]);
 
-  
-  
-
-return (
+  return (
   <div className="mediciones-formulario" style={{marginTop: "90px", maxWidth: "1200px", minHeight: "800px", overflow: "hidden",  }}>
 
     <div className="consulta-header">
