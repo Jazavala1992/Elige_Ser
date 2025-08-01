@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { pool, queryAdapter, DB_TYPE } from '../db_adapter.js';
+import { verifyToken } from '../middlewares/authMiddleware.js';
 
 const router = Router();
 
@@ -315,6 +316,17 @@ router.get('/setup-database', async (req, res) => {
             timestamp: new Date().toISOString()
         });
     }
+});
+
+// Endpoint de debug para probar middleware
+router.get('/debug-auth', verifyToken, (req, res) => {
+    res.json({
+        success: true,
+        message: 'Authentication successful',
+        user: req.user,
+        userId: req.userId,
+        timestamp: new Date().toISOString()
+    });
 });
 
 export default router;
