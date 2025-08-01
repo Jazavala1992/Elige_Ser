@@ -89,9 +89,26 @@ export default function Mediciones({ idConsulta, idPaciente }) {
   const sexoFactor = (sexo) => (sexo === "M" ? 1 : 0);
 
   const calcularResultados = (datos) => {
+    console.log("🧮 calcularResultados - Datos recibidos:", datos);
+    
     const {
     Peso,
+    peso,
     Talla,
+    talla,
+    pl_subescapular,
+    pl_tricipital,
+    pl_bicipital,
+    pl_supraespinal,
+    pl_suprailiaco, // Nota: transformMedicionesData2 usa pl_suprailiaco, no pl_ileocrestal
+    pl_abdominal,
+    pl_muslo_medial,
+    pl_pantorrilla_medial,
+    diametro_biestiloideo,
+    diametro_femoral,
+    edad,
+    sexo,
+    // También aceptar nombres originales por compatibilidad
     "Pliegue subescapular": subescapular,
     "Pliegue tricipital": tricipital,
     "Pliegue bicipital": bicipital,
@@ -102,47 +119,81 @@ export default function Mediciones({ idConsulta, idPaciente }) {
     "Pliegue pantorrilla": pantorrillaPliegue,
     "Diametro biestiloideo": biestiloideo,
     "Diametro femoral": femoral,
-    edad,
-    sexo,
     } = datos;
 
+    // Usar valores transformados si existen, sino usar originales
+    const pesoFinal = peso || Peso;
+    const tallaFinal = talla || Talla;
+    const tricipitalFinal = pl_tricipital || tricipital;
+    const bicipitalFinal = pl_bicipital || bicipital;
+    const subescapularFinal = pl_subescapular || subescapular;
+    const supraespinalFinal = pl_supraespinal || supraespinal;
+    const ileo_suprailiaco = pl_suprailiaco || ileocrestal; // pl_suprailiaco es lo mismo que ileocrestal
+    const abdominalFinal = pl_abdominal || abdominal;
+    const musloFinal = pl_muslo_medial || musloPliegue;
+    const pantorrillaFinal = pl_pantorrilla_medial || pantorrillaPliegue;
+    const biestiloideoFinal = diametro_biestiloideo || biestiloideo;
+    const femoralFinal = diametro_femoral || femoral;
+
+    console.log("📊 Datos extraídos para cálculo:");
+    console.log("Peso:", pesoFinal, "Talla:", tallaFinal, "Edad:", edad, "Sexo:", sexo);
+    console.log("Pliegues - Tricipital:", tricipitalFinal, "Bicipital:", bicipitalFinal, "Subescapular:", subescapularFinal);
+    console.log("Pliegues - Supraespinal:", supraespinalFinal, "Ileocrestal/Suprailiaco:", ileo_suprailiaco, "Abdominal:", abdominalFinal);
+    console.log("Pliegues - Muslo:", musloFinal, "Pantorrilla:", pantorrillaFinal);
+    console.log("Diámetros - Biestiloideo:", biestiloideoFinal, "Femoral:", femoralFinal);
+
     // Validar que tenemos datos necesarios antes de calcular
-    if (!Peso || !Talla || !edad || !sexo) {
+    if (!pesoFinal || !tallaFinal || !edad || !sexo) {
+      console.log("❌ Faltan datos necesarios para el cálculo:");
+      console.log("Peso:", pesoFinal, "Talla:", tallaFinal, "Edad:", edad, "Sexo:", sexo);
       return; // No calcular si no hay datos suficientes
     }
 
     const sumaPliegues =
-      parseFloat(tricipital || 0) +
-      parseFloat(bicipital || 0) +
-      parseFloat(subescapular || 0) +
-      parseFloat(supraespinal || 0) +
-      parseFloat(ileocrestal || 0) +
-      parseFloat(abdominal || 0) +
-      parseFloat(musloPliegue || 0) +
-      parseFloat(pantorrillaPliegue || 0);
+      parseFloat(tricipitalFinal || 0) +
+      parseFloat(bicipitalFinal || 0) +
+      parseFloat(subescapularFinal || 0) +
+      parseFloat(supraespinalFinal || 0) +
+      parseFloat(ileo_suprailiaco || 0) +
+      parseFloat(abdominalFinal || 0) +
+      parseFloat(musloFinal || 0) +
+      parseFloat(pantorrillaFinal || 0);
 
-    const imc = Peso && Talla ? Peso / Math.pow(Talla / 100, 2) : 0;
+    console.log("📈 Suma de pliegues calculada:", sumaPliegues);
+
+    const imc = pesoFinal && tallaFinal ? pesoFinal / Math.pow(tallaFinal / 100, 2) : 0;
 
     const porcentajeGrasa = sumaPliegues * 0.153 + 5.783;
 
     const masaMuscularKg =
-      0.244 * Peso +
-      7.8 * (Talla / 100) +
+      0.244 * pesoFinal +
+      7.8 * (tallaFinal / 100) +
       6.6 * sexoFactor(sexo) -
       0.098 * edad -
       3.3;
 
-    const porcentaje_masa_muscular = Peso ? (masaMuscularKg / Peso) * 100 : 0;
+    const porcentaje_masa_muscular = pesoFinal ? (masaMuscularKg / pesoFinal) * 100 : 0;
 
-    const masaOsea2 = 3.02 * ((Talla * Talla * (biestiloideo || 0) * (femoral || 0) * 400 /100000000) ** 0.712);
+    const masaOsea2 = 3.02 * ((tallaFinal * tallaFinal * (parseFloat(biestiloideoFinal) || 0) * (parseFloat(femoralFinal) || 0) * 400 /100000000) ** 0.712);
 
-    const masaOsea = (masaOsea2 / Peso) * 100;
+    const masaOsea = (masaOsea2 / pesoFinal) * 100;
 
-    const masaGrasaKg = (Peso * porcentajeGrasa) / 100;
+    console.log("🦴 Masa ósea - Biestiloideo:", biestiloideoFinal, "Femoral:", femoralFinal, "Masa ósea calculada:", masaOsea);
+
+    const masaGrasaKg = (pesoFinal * porcentajeGrasa) / 100;
 
     const factor2 = sexo === "M" ? 0.209 : 0.241;
 
-    const masaResidual = (Peso - (masaGrasaKg + masaMuscularKg + masaOsea2)) * factor2;
+    const masaResidual = (pesoFinal - (masaGrasaKg + masaMuscularKg + masaOsea2)) * factor2;
+
+    console.log("🎯 Resultados calculados:");
+    console.log("IMC:", imc.toFixed(2));
+    console.log("Suma pliegues:", sumaPliegues.toFixed(2));
+    console.log("% Grasa:", porcentajeGrasa.toFixed(2));
+    console.log("Masa muscular kg:", masaMuscularKg.toFixed(2));
+    console.log("% Masa muscular:", porcentaje_masa_muscular.toFixed(2));
+    console.log("% Masa ósea:", masaOsea.toFixed(2));
+    console.log("Masa residual:", masaResidual.toFixed(2));
 
     // Este estado debe mantener el formato de array para ser consistente
     // con los datos que vienen del backend
