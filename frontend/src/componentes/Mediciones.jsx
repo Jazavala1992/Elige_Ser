@@ -183,7 +183,9 @@ export default function Mediciones({ idConsulta, idPaciente }) {
     try {
       const response = await crearMediciones(medicionConId); 
       console.log("Medición guardada correctamente en el backend.");
-      console.log("Datos enviados:", response);
+      console.log("Respuesta completa:", response);
+      console.log("Estructura response.body:", response?.body);
+      console.log("Estructura response.body.medicion:", response?.body?.medicion);
       
       Swal.fire({
         icon: 'success',
@@ -191,7 +193,15 @@ export default function Mediciones({ idConsulta, idPaciente }) {
         showConfirmButton: true,
         timer: 1500
       });   
-      const id_medicion = response?.body?.medicion?.id_medicion; 
+      
+      // Intentar diferentes rutas para obtener el id_medicion
+      let id_medicion = response?.body?.medicion?.id_medicion || 
+                       response?.medicion?.id_medicion || 
+                       response?.data?.body?.medicion?.id_medicion ||
+                       response?.data?.medicion?.id_medicion;
+                       
+      console.log("ID medición extraído:", id_medicion);
+      
       if (id_medicion) {
         await enviarResultados(id_medicion);
         // Recargar mediciones y resultados después de guardar
@@ -199,6 +209,7 @@ export default function Mediciones({ idConsulta, idPaciente }) {
         await cargarResultados();
       } else {
         console.error("No se pudo obtener id_medicion de la respuesta.");
+        console.error("Respuesta completa para debug:", JSON.stringify(response, null, 2));
       }
 
     } catch (error) {
