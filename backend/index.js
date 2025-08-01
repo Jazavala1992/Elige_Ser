@@ -10,7 +10,19 @@ import ResultadosRoutes from './routes/ResultadosRoutes.js';
 import RegistrosRoutes from './routes/RegistrosRoutes.js';
 
 const app = express();
-app.use(cors({ origin: 'http://localhost:5173' })); // Habilita CORS para el frontend
+
+// Configuración CORS para desarrollo y producción
+const corsOptions = {
+  origin: [
+    'http://localhost:5173', 
+    'https://elige-ser.netlify.app',
+    'https://elige-ser-frontend.onrender.com',
+    'https://elige-ser.onrender.com'
+  ],
+  credentials: true
+};
+
+app.use(cors(corsOptions)); // Habilita CORS para el frontend
 app.use(express.json()); // Habilita el manejo de JSON en las solicitudes
 
 // Rutas

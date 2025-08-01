@@ -17,7 +17,7 @@ export const registerUsuario = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt); // Generar el hash de la contraseña
 
     // Guardar el usuario en la base de datos
-    const query = "INSERT INTO usuarios (nombre, username, email, password) VALUES (?, ?, ?, ?)";
+    const query = "INSERT INTO Usuarios (nombre, username, email, password) VALUES (?, ?, ?, ?)";
     await pool.query(query, [nombre, username, email, hashedPassword]);
 
     res.status(201).json({ message: "Usuario creado exitosamente" });
