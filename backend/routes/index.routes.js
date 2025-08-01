@@ -58,6 +58,44 @@ router.get('/test-insert', async (req, res) => {
     }
 });
 
+// Ruta de test para ver estructura de tablas
+router.get('/test-schema', async (req, res) => {
+    try {
+        console.log('🔧 Test de esquema PostgreSQL...');
+        
+        // Obtener estructura de todas las tablas principales
+        const tables = ['usuarios', 'pacientes', 'consultas', 'mediciones', 'resultados'];
+        const schema = {};
+        
+        for (const table of tables) {
+            const [columns] = await queryAdapter.query(`
+                SELECT column_name, data_type, is_nullable, column_default
+                FROM information_schema.columns 
+                WHERE table_schema = 'public' 
+                AND table_name = ?
+                ORDER BY ordinal_position
+            `, [table]);
+            
+            schema[table] = columns;
+        }
+        
+        console.log('📋 Esquema de tablas:', schema);
+        
+        res.json({
+            success: true,
+            message: 'Esquema de PostgreSQL',
+            schema: schema,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('❌ Error en test de esquema:', error);
+        res.status(500).json({ 
+            error: error.message,
+            stack: error.stack 
+        });
+    }
+});
+
 router.get('/ping', async (req, res) => {
     try {
         const startTime = Date.now();
