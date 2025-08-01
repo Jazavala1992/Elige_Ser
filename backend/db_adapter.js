@@ -1,4 +1,4 @@
-// Adaptador PostgreSQL para Render - Solo PostgreSQL
+// Adaptador PostgreSQL para Render - Solo PostgreSQL v2.0 con timeout
 import { pool as pgPool } from './db_postgres.js';
 
 console.log('🔧 Database adapter initialized for: POSTGRES');
