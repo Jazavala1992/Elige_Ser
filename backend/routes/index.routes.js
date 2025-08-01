@@ -97,6 +97,34 @@ router.get('/test-schema', async (req, res) => {
     }
 });
 
+// Ruta de test simple para INSERT
+router.get('/test-simple-insert', async (req, res) => {
+    try {
+        console.log('🔧 Test de INSERT simple...');
+        
+        // Intentar insertar un paciente simple
+        const [result] = await queryAdapter.query(`
+            INSERT INTO pacientes (nombre, fecha_nacimiento, sexo, id_usuario) 
+            VALUES (?, ?, ?, ?) RETURNING id_paciente
+        `, ['Test Simple', '1990-01-01', 'M', 1]);
+        
+        console.log('✅ Resultado del INSERT:', result);
+        
+        res.json({
+            success: true,
+            message: 'INSERT simple funcionando',
+            result: result,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('❌ Error en test de INSERT:', error);
+        res.status(500).json({ 
+            error: error.message,
+            stack: error.stack 
+        });
+    }
+});
+
 router.get('/ping', async (req, res) => {
     try {
         const startTime = Date.now();
