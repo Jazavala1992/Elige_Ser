@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { PORT } from './config.js';
+import './db_postgres.js'; // Inicializar conexión PostgreSQL
 import indexRoutes from './routes/index.routes.js';
 import PacientesRoutes from './routes/PacientesRoutes.js';
 import UsuariosRoutes from './routes/UsuariosRoutes.js';
