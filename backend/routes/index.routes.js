@@ -62,6 +62,95 @@ router.get('/api/test', (req, res) => {
     });
 });
 
+// Rutas públicas alternativas sin prefijo API para bypass total
+router.get('/public/paciente/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log('Ruta pública: Obteniendo paciente con ID:', id);
+        
+        const [rows] = await queryAdapter.query(
+            'SELECT * FROM pacientes WHERE id_paciente = ?',
+            [id]
+        );
+        
+        if (rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Paciente no encontrado'
+            });
+        }
+        
+        res.json({
+            success: true,
+            paciente: rows[0]
+        });
+    } catch (error) {
+        console.error('Error en ruta pública paciente:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+router.get('/public/resultados/patient/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log('Ruta pública: Obteniendo resultados para paciente ID:', id);
+        
+        const [rows] = await queryAdapter.query(
+            'SELECT * FROM resultados WHERE id_paciente = ? ORDER BY fecha_calculo DESC',
+            [id]
+        );
+        
+        res.json(rows);
+    } catch (error) {
+        console.error('Error en ruta pública resultados:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+router.post('/public/mediciones/create', async (req, res) => {
+    try {
+        console.log('Ruta pública: Creando medición');
+        console.log('Datos recibidos:', req.body);
+        
+        const {id_paciente, peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral} = req.body;
+        
+        const [result] = await queryAdapter.query(
+            `INSERT INTO mediciones (id_paciente, peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [id_paciente, peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral]
+        );
+        
+        res.status(201).json({
+            message: 'Medición creada exitosamente',
+            id_medicion: result.insertId
+        });
+    } catch (error) {
+        console.error('Error en ruta pública crear medición:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+router.delete('/public/mediciones/delete/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log('Ruta pública: Eliminando medición ID:', id);
+        
+        const [result] = await queryAdapter.query('DELETE FROM mediciones WHERE id_medicion = ?', [id]);
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Medición no encontrada' });
+        }
+        
+        res.json({
+            message: 'Medición eliminada exitosamente',
+            id_medicion: id
+        });
+    } catch (error) {
+        console.error('Error en ruta pública eliminar medición:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Endpoint de salud básico que no depende de la DB
 router.get('/health-basic', (req, res) => {
     res.json({

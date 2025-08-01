@@ -26,6 +26,15 @@ const corsOptions = {
 app.use(cors(corsOptions)); // Habilita CORS para el frontend
 app.use(express.json()); // Habilita el manejo de JSON en las solicitudes
 
+// Ruta de prueba global para verificar que no hay middleware global
+app.get('/api/test-global', (req, res) => {
+    res.json({
+        success: true,
+        message: 'Ruta global de prueba funcionando sin autenticación',
+        timestamp: new Date().toISOString()
+    });
+});
+
 // Rutas
 app.use(indexRoutes);
 app.use(UsuariosRoutes); 
