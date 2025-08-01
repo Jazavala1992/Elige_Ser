@@ -95,14 +95,43 @@ router.get('/public/resultados/patient/:id', async (req, res) => {
         const { id } = req.params;
         console.log('Ruta pública: Obteniendo resultados para paciente ID:', id);
         
-        const [rows] = await queryAdapter.query(
-            'SELECT * FROM resultados WHERE id_paciente = ? ORDER BY fecha_calculo DESC',
-            [id]
-        );
+        // JOIN con mediciones y consultas para obtener resultados por paciente
+        const [rows] = await queryAdapter.query(`
+            SELECT r.*, m.id_medicion, c.id_consulta, c.fecha_consulta 
+            FROM resultados r
+            INNER JOIN mediciones m ON r.id_medicion = m.id_medicion
+            INNER JOIN consultas c ON m.id_consulta = c.id_consulta
+            WHERE c.id_paciente = ? 
+            ORDER BY r.fecha_calculo DESC
+        `, [id]);
         
+        console.log('Resultados encontrados:', rows.length);
         res.json(rows);
     } catch (error) {
         console.error('Error en ruta pública resultados:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Ruta pública para obtener mediciones por paciente
+router.get('/public/mediciones/patient/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log('Ruta pública: Obteniendo mediciones para paciente ID:', id);
+        
+        // JOIN con consultas para obtener mediciones por paciente
+        const [rows] = await queryAdapter.query(`
+            SELECT m.*, c.id_consulta, c.fecha_consulta 
+            FROM mediciones m
+            INNER JOIN consultas c ON m.id_consulta = c.id_consulta
+            WHERE c.id_paciente = ? 
+            ORDER BY m.fecha_medicion DESC
+        `, [id]);
+        
+        console.log('Mediciones encontradas:', rows.length);
+        res.json(rows);
+    } catch (error) {
+        console.error('Error en ruta pública mediciones:', error);
         res.status(500).json({ error: error.message });
     }
 });
