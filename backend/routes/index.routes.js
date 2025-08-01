@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { queryAdapter, DB_TYPE } from '../db_adapter.js';
+import { pool, queryAdapter, DB_TYPE } from '../db_adapter.js';
 
 const router = Router();
 
@@ -59,7 +59,7 @@ router.get('/test-db-connection', async (req, res) => {
     try {
         // Test 1: Conexión básica
         const startTime1 = Date.now();
-        const [basicResult] = await pool.query('SELECT 1 as test');
+        const [basicResult] = await queryAdapter.query('SELECT 1 as test');
         const endTime1 = Date.now();
         tests.push({
             test: 'Basic Connection',
@@ -68,9 +68,15 @@ router.get('/test-db-connection', async (req, res) => {
             result: basicResult[0]
         });
 
-        // Test 2: Verificar hora del servidor
+        // Test 2: Verificar hora del servidor (compatible con ambas DB)
         const startTime2 = Date.now();
-        const [timeResult] = await pool.query('SELECT NOW() as server_time, @@version as mysql_version');
+        let timeQuery;
+        if (DB_TYPE === 'postgres') {
+            timeQuery = 'SELECT NOW() as server_time, version() as db_version';
+        } else {
+            timeQuery = 'SELECT NOW() as server_time, @@version as db_version';
+        }
+        const [timeResult] = await queryAdapter.query(timeQuery);
         const endTime2 = Date.now();
         tests.push({
             test: 'Server Info',
@@ -79,16 +85,30 @@ router.get('/test-db-connection', async (req, res) => {
             result: timeResult[0]
         });
 
-        // Test 3: Mostrar tablas (solo nombres)
+        // Test 3: Mostrar tablas
         const startTime3 = Date.now();
-        const [tablesResult] = await pool.query('SHOW TABLES');
+        let tablesQuery;
+        if (DB_TYPE === 'postgres') {
+            tablesQuery = "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'";
+        } else {
+            tablesQuery = 'SHOW TABLES';
+        }
+        const [tablesResult] = await queryAdapter.query(tablesQuery);
         const endTime3 = Date.now();
+        
+        let tableNames;
+        if (DB_TYPE === 'postgres') {
+            tableNames = tablesResult.map(row => row.table_name);
+        } else {
+            tableNames = tablesResult.map(row => Object.values(row)[0]);
+        }
+        
         tests.push({
             test: 'Show Tables',
             success: true,
             time_ms: endTime3 - startTime3,
             tables_count: tablesResult.length,
-            tables: tablesResult.map(row => Object.values(row)[0])
+            tables: tableNames
         });
 
         res.json({
@@ -96,6 +116,7 @@ router.get('/test-db-connection', async (req, res) => {
             message: 'All database tests passed',
             tests: tests,
             total_tests: tests.length,
+            database_type: DB_TYPE,
             database_config: {
                 host: process.env.DB_HOST || process.env.MYSQL_ADDON_HOST,
                 port: process.env.DB_PORT || process.env.MYSQL_ADDON_PORT,
