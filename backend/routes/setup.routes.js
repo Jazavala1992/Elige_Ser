@@ -3,8 +3,8 @@ import { queryAdapter } from '../db_adapter.js';
 
 const router = Router();
 
-// Endpoint temporal para crear el esquema de la base de datos
-router.post('/setup-database', async (req, res) => {
+// Endpoint temporal para crear el esquema de la base de datos (sin autenticación)
+router.get('/setup-database', async (req, res) => {
     try {
         console.log('🔧 Ejecutando setup de base de datos...');
         
