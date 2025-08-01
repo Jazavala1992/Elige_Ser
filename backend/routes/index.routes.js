@@ -100,15 +100,15 @@ router.get('/test-schema', async (req, res) => {
 // Ruta de test simple para INSERT
 router.get('/test-simple-insert', async (req, res) => {
     try {
-        console.log('🔧 Test de INSERT simple...');
+        console.log('🔧 Test simple de INSERT...');
         
-        // Intentar insertar un paciente simple
-        const [result] = await queryAdapter.query(`
-            INSERT INTO pacientes (nombre, fecha_nacimiento, sexo, id_usuario) 
-            VALUES (?, ?, ?, ?) RETURNING id_paciente
-        `, ['Test Simple', '1990-01-01', 'M', 1]);
+        // Test muy simple: insertar en tabla pacientes
+        const [result] = await queryAdapter.query(
+            'INSERT INTO pacientes (id_usuario, nombre, fecha_nacimiento, sexo) VALUES (?, ?, ?, ?) RETURNING id_paciente',
+            [1, 'Test User', '1990-01-01', 'M']
+        );
         
-        console.log('✅ Resultado del INSERT:', result);
+        console.log('📋 Resultado INSERT:', result);
         
         res.json({
             success: true,
@@ -117,7 +117,45 @@ router.get('/test-simple-insert', async (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (error) {
-        console.error('❌ Error en test de INSERT:', error);
+        console.error('❌ Error en test simple INSERT:', error);
+        res.status(500).json({ 
+            error: error.message,
+            stack: error.stack 
+        });
+    }
+});
+
+// Ruta de test para mediciones específica
+router.get('/test-medicion-insert', async (req, res) => {
+    try {
+        console.log('🔧 Test de INSERT medición...');
+        
+        // Primero crear una consulta
+        const [consultaResult] = await queryAdapter.query(
+            'INSERT INTO consultas (id_paciente, fecha_consulta, observaciones) VALUES (?, ?, ?) RETURNING id_consulta',
+            [5, '2025-01-01', 'Test consultation']
+        );
+        
+        const idConsulta = consultaResult[0]?.id_consulta;
+        console.log('📋 Consulta creada:', idConsulta);
+        
+        // Luego crear una medición simple
+        const [medicionResult] = await queryAdapter.query(
+            'INSERT INTO mediciones (id_consulta, peso, talla) VALUES (?, ?, ?) RETURNING id_medicion',
+            [idConsulta, 70, 175]
+        );
+        
+        console.log('📋 Medición creada:', medicionResult);
+        
+        res.json({
+            success: true,
+            message: 'INSERT medición funcionando',
+            consulta_id: idConsulta,
+            medicion_result: medicionResult,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('❌ Error en test medición INSERT:', error);
         res.status(500).json({ 
             error: error.message,
             stack: error.stack 
