@@ -4,7 +4,7 @@ import queryAdapter from "../db_adapter.js";
 export const getPacientes = async (req, res) => {
     try {
       const id_usuario = req.params.id;
-      const [result] = await queryAdapter.query("SELECT * FROM pacientes WHERE id_usuario = ? AND activo = TRUE", [id_usuario]);
+      const [result] = await queryAdapter.query("SELECT * FROM pacientes WHERE id_usuario = ?", [id_usuario]);
       res.json(result); 
     } catch (error) {
       console.error("Error al obtener los pacientes:", error);
@@ -105,16 +105,14 @@ export const createPacientes = async (req, res) => {
   export const deletePacientes = async (req, res) => {
     try {
       const result = await queryAdapter.query(
-        `UPDATE pacientes 
-         SET activo = FALSE 
-         WHERE id_paciente = ?`,
+        `DELETE FROM pacientes WHERE id_paciente = ?`,
         [req.params.id]
       );
-  
+
       if (result.affectedRows === 0) {
         return res.status(404).json({ message: "Paciente no encontrado" });
       }
-  
+
       res.json({ message: "Paciente eliminado" });
     } catch (error) {
       console.error("Error al eliminar el paciente:", error);
