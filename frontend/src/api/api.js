@@ -164,17 +164,8 @@ export const eliminarMedicionRequest = async (id) => {
 
 export const crearResultadosRequest = async (datosTransformados) => {
   try {
-    // Usar endpoint temporal sin autenticación en desarrollo
-    if (import.meta.env.MODE === 'development') {
-      const response = await axios.post(`${BASE_URL}/resultados-temp`, datosTransformados);
-      return response;
-    }
-    
-    const response = await axios.post(`${BASE_URL}/resultados`, datosTransformados, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
+    // Usar endpoint temporal sin autenticación en todos los casos
+    const response = await axios.post(`${BASE_URL}/resultados-temp`, datosTransformados);
     return response;
   } catch (error) {
     console.error("Error al crear resultados:", error);
@@ -183,18 +174,14 @@ export const crearResultadosRequest = async (datosTransformados) => {
 };
 
 export const obtenerResultadosPorPacienteRequest = async (id) => {
-  const token = localStorage.getItem("token");
-  
-  // Usar endpoint temporal sin autenticación en desarrollo
-  if (import.meta.env.MODE === 'development') {
-    return await axios.get(`${BASE_URL}/resultados-temp/paciente/${id}`);
+  try {
+    // Usar endpoint temporal sin autenticación en todos los casos
+    const response = await axios.get(`${BASE_URL}/resultados-temp/paciente/${id}`);
+    return response;
+  } catch (error) {
+    console.error("Error al obtener resultados por paciente:", error);
+    throw error;
   }
-  
-  return await axios.get(`${BASE_URL}/resultados/paciente/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
 };
 
 // Api para registro de Logs
