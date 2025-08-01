@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { pool, queryAdapter } from '../db_adapter.js';
-import { verifyToken } from '../middlewares/authMiddleware.js';
+// import { verifyToken } from '../middlewares/authMiddleware.js'; // Comentado - no necesario para rutas públicas
 
 const router = Router();
 const DB_TYPE = 'postgres'; // Definir tipo de base de datos
