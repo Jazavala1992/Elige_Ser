@@ -6,6 +6,7 @@ import { useConsultas } from "../context/ConsultasContext";
 import { useParams } from "react-router-dom";
 import { MedicionesProvider } from "../context/MedicionesContext";
 import { ResultadosProvider } from "../context/ResultadosContext"; 
+import { PacientesProvider } from "../context/PacientesContext";
 import Mediciones from "./Mediciones";
 import Swal from 'sweetalert2';
 
@@ -117,15 +118,17 @@ function CardConsultas() {
       </div>
 
       {mostrarMediciones && (
-        <MedicionesProvider>
-          <ResultadosProvider>
-          <Mediciones 
-            idConsulta={idConsultaSeleccionada} // Pasa el id_consulta seleccionado
-            idPaciente={idPaciente} // Pasa el idPaciente
-            setMostrarMediciones={setMostrarMediciones} 
-          />
-          </ResultadosProvider>
-        </MedicionesProvider>
+        <PacientesProvider>
+          <MedicionesProvider>
+            <ResultadosProvider>
+            <Mediciones 
+              idConsulta={idConsultaSeleccionada} // Pasa el id_consulta seleccionado
+              idPaciente={idPaciente} // Pasa el idPaciente
+              setMostrarMediciones={setMostrarMediciones} 
+            />
+            </ResultadosProvider>
+          </MedicionesProvider>
+        </PacientesProvider>
         
       )}
     </div>

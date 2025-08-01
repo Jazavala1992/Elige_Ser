@@ -38,6 +38,16 @@ export const obtenerPacientesRequest = async () => {
   return response;
 }
 
+export const obtenerPacientePorIdRequest = async (idPaciente) => {
+  const token = localStorage.getItem("token");
+  const response = await axios.get(`${BASE_URL}/paciente/${idPaciente}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response;
+}
+
 export const crearPacienteRequest = async (paciente) => {
   const token = localStorage.getItem("token");
   console.log("Enviando paciente a:", `${BASE_URL}/pacientes`);

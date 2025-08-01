@@ -3,6 +3,7 @@ import { Table, Form, FormGroup, Label, Input, Button } from "reactstrap";
 import "../css/mediciones.css";
 import { useResultados } from "../context/ResultadosContext";
 import { useMediciones } from "../context/MedicionesContext";
+import { usePacientes } from "../context/PacientesContext";
 import Swal from 'sweetalert2';
 import {  ResponsiveContainer } from "recharts";
 import { GraficoResultadosCompuesto } from "./GraficoResultadosCompuesto";
@@ -13,12 +14,15 @@ import { FaEdit, FaTrash } from "react-icons/fa";
 export default function Mediciones({ idConsulta, idPaciente }) {
   const { crearMediciones, medicion, obtenerMedicionesPorPaciente, actualizarMedicion, eliminarMedicion } = useMediciones();
   const { crearResultados, resultadoContext, obtenerResultadosPorPaciente  } = useResultados();
+  const { obtenerPacientePorId } = usePacientes();
   
-  
+  const [pacienteInfo, setPacienteInfo] = useState(null);
 
   const [datos, setDatos] = useState({
     Peso: "",
     Talla: "",
+    edad: "",
+    sexo: "",
     "Perímetro brazo relajado": "",
     "Perímetro brazo tensión": "",
     "Perímetro muslo": "",
@@ -44,6 +48,43 @@ export default function Mediciones({ idConsulta, idPaciente }) {
   // Estados para manejar la edición
   const [editandoMedicion, setEditandoMedicion] = useState(null);
   const [datosEdicion, setDatosEdicion] = useState({});
+
+  // Función para calcular la edad desde la fecha de nacimiento
+  const calcularEdad = (fechaNacimiento) => {
+    const hoy = new Date();
+    const nacimiento = new Date(fechaNacimiento);
+    let edad = hoy.getFullYear() - nacimiento.getFullYear();
+    const mes = hoy.getMonth() - nacimiento.getMonth();
+    
+    if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+      edad--;
+    }
+    
+    return edad;
+  };
+
+  // Cargar información del paciente
+  const cargarPaciente = async () => {
+    try {
+      if (idPaciente) {
+        const paciente = await obtenerPacientePorId(idPaciente);
+        console.log("Información del paciente:", paciente);
+        setPacienteInfo(paciente);
+        
+        // Actualizar los datos con la edad calculada y el sexo
+        if (paciente) {
+          const edad = calcularEdad(paciente.fecha_nacimiento);
+          setDatos(prev => ({
+            ...prev,
+            edad: edad.toString(),
+            sexo: paciente.sexo
+          }));
+        }
+      }
+    } catch (error) {
+      console.error("Error al cargar información del paciente:", error);
+    }
+  };
 
   const sexoFactor = (sexo) => (sexo === "M" ? 1 : 0);
 
@@ -391,6 +432,10 @@ export default function Mediciones({ idConsulta, idPaciente }) {
   };
 
   useEffect(() => {
+    cargarPaciente();
+  }, [idPaciente]);
+
+  useEffect(() => {
     cargarResultados();
   }, [idPaciente]);
   
@@ -535,22 +580,20 @@ export default function Mediciones({ idConsulta, idPaciente }) {
             type="number"
             name="edad"
             value={datos.edad}
-            onChange={handleChange}
+            readOnly
+            style={{ backgroundColor: "#f8f9fa" }}
           />
           </FormGroup>
 
          <FormGroup className="col">
           <Label for="sexo">Sexo</Label>
           <Input
-            type="select"
+            type="text"
             name="sexo"
-            value={datos.sexo}
-            onChange={handleChange}
-          >
-            <option value="" disabled>Seleccione</option>
-            <option value="M">M</option>
-            <option value="F">F</option>
-          </Input>
+            value={datos.sexo === 'M' ? 'Masculino' : datos.sexo === 'F' ? 'Femenino' : ''}
+            readOnly
+            style={{ backgroundColor: "#f8f9fa" }}
+          />
           </FormGroup>
           <FormGroup className="col">
           <Label for="fecha">Fecha</Label>

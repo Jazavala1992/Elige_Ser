@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
-import { crearPacienteRequest, editPacienteRequest, eliminarPacienteRequest } from "../api/api";
+import { crearPacienteRequest, editPacienteRequest, eliminarPacienteRequest, obtenerPacientePorIdRequest } from "../api/api";
 
 const PacientesContext = createContext();
 
@@ -47,9 +47,19 @@ export const PacientesProvider = ({ children }) => {
     }
   }
 
+  const obtenerPacientePorId = async (idPaciente) => {
+    try {
+      const response = await obtenerPacientePorIdRequest(idPaciente);
+      return response.data.paciente;
+    } catch (error) {
+      console.error("Error al obtener paciente por ID:", error);
+      throw error;
+    }
+  };
+
 
   return (
-    <PacientesContext.Provider value={{ pacientes, setPacientes, crearPaciente, editPaciente, eliminarPaciente }}>
+    <PacientesContext.Provider value={{ pacientes, setPacientes, crearPaciente, editPaciente, eliminarPaciente, obtenerPacientePorId }}>
       {children}
     </PacientesContext.Provider>
   );
