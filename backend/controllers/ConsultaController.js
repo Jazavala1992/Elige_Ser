@@ -25,3 +25,22 @@ export const createConsulta = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 }
+
+export const deleteConsulta = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const [result] = await queryAdapter.query('DELETE FROM consultas WHERE id_consulta = ?', [id]);
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Consulta no encontrada' });
+        }
+        
+        res.json({
+            message: 'Consulta eliminada exitosamente',
+            id_consulta: id
+        });
+    } catch (error) {
+        console.error("Error al eliminar consulta:", error);
+        res.status(500).json({ error: error.message });
+    }
+}
