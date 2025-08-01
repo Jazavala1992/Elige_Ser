@@ -1,10 +1,10 @@
-import { pool } from "../db.js";
+import { queryAdapter } from "../db_adapter.js";
 
 export const createMedicion = async (req, res) => {
     const {id_consulta, peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral} = req.body;
     try {
-        const [result] = await pool.query(
-            'INSERT INTO Mediciones (id_consulta, peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        const [result] = await queryAdapter.query(
+            'INSERT INTO mediciones (id_consulta, peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [id_consulta, peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral]);
         
         const response = {
@@ -46,11 +46,11 @@ export const createMedicion = async (req, res) => {
 export const getMedicionesByPaciente = async (req, res) => {
     const { id_paciente } = req.params;
     try {
-        const [mediciones] = await pool.query(
+        const [mediciones] = await queryAdapter.query(
             `SELECT m.* 
-             FROM Mediciones m
-             INNER JOIN Consultas c ON m.id_consulta = c.id_consulta
-             WHERE c.id_paciente = ? AND c.activo = TRUE`,
+             FROM mediciones m
+             INNER JOIN consultas c ON m.id_consulta = c.id_consulta
+             WHERE c.id_paciente = ?`,
             [id_paciente]
         );
         if (mediciones.length === 0) {

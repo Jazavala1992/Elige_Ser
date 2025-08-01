@@ -1,9 +1,9 @@
-import { pool } from "../db.js";
+import { queryAdapter } from "../db_adapter.js";
 
 export const getConsultas = async (req, res) => {
     try {
         const id_paciente = req.params.id;
-        const [result] = await pool.query("SELECT * FROM Consultas WHERE id_paciente = ? AND activo = TRUE", [id_paciente]);
+        const [result] = await queryAdapter.query("SELECT * FROM consultas WHERE id_paciente = ?", [id_paciente]);
         res.json(result);
     } catch (error) {
         console.error("Error al obtener las consultas:", error);
@@ -13,12 +13,12 @@ export const getConsultas = async (req, res) => {
 
 export const createConsulta = async (req, res) => {
     try {
-        const { id_paciente, fecha_consulta, Hora, observaciones} = req.body;
-        const result = await pool.query('INSERT INTO Consultas (id_paciente, fecha_consulta, Hora, observaciones) VALUES (?, ?, ?, ?)', [id_paciente, fecha_consulta, Hora, observaciones]);
+        const { id_paciente, fecha_consulta, hora, observaciones} = req.body;
+        const result = await queryAdapter.query('INSERT INTO consultas (id_paciente, fecha_consulta, hora, observaciones) VALUES (?, ?, ?, ?)', [id_paciente, fecha_consulta, hora, observaciones]);
         res.json({
             message: 'Consulta creada',
             body: {
-                consulta: { id_paciente: result.insertId, fecha_consulta, Hora, observaciones }
+                consulta: { id_consulta: result.insertId, id_paciente, fecha_consulta, hora, observaciones }
             }
         });
     } catch (error) {

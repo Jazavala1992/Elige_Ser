@@ -1,10 +1,10 @@
-import { pool } from "../db.js";
+import { queryAdapter } from "../db_adapter.js";
 
 export const crearResultados = async (req, res) => {
     const {id_medicion, imc, suma_pliegues, porcentaje_grasa, masa_muscular_kg, porcentaje_masa_muscular, masa_osea, masa_residual} = req.body;
     try {
-        const [result] = await pool.query(
-            'INSERT INTO ResultadosAntropometricos (id_medicion, imc, suma_pliegues, porcentaje_grasa, masa_muscular_kg, porcentaje_masa_muscular, masa_osea, masa_residual) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        const [result] = await queryAdapter.query(
+            'INSERT INTO resultados (id_medicion, imc, suma_pliegues, porcentaje_grasa, masa_muscular_kg, porcentaje_masa_muscular, masa_osea, masa_residual) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
             [id_medicion, imc, suma_pliegues, porcentaje_grasa, masa_muscular_kg, porcentaje_masa_muscular, masa_osea, masa_residual]
         );
         res.status(201).json({
@@ -22,13 +22,13 @@ export const crearResultados = async (req, res) => {
 export const obtenerResultadosPorPaciente = async (req, res) => {
     const { id_paciente } = req.params;
     try {
-        const [resultados] = await pool.query(
+        const [resultados] = await queryAdapter.query(
             `SELECT r.* 
-             FROM ResultadosAntropometricos  r
-                INNER JOIN Mediciones m ON m.id_medicion = r.id_medicion
-                INNER JOIN Consultas c ON m.id_consulta = c.id_consulta
-                INNER JOIN Pacientes p ON c.id_paciente = p.id_paciente
-            WHERE p.id_paciente = ? AND r.activo = TRUE`,
+             FROM resultados r
+                INNER JOIN mediciones m ON m.id_medicion = r.id_medicion
+                INNER JOIN consultas c ON m.id_consulta = c.id_consulta
+                INNER JOIN pacientes p ON c.id_paciente = p.id_paciente
+            WHERE p.id_paciente = ?`,
             [id_paciente]
         );
         if (resultados.length === 0) {

@@ -1,5 +1,4 @@
-import { pool } from "../db.js";
-import queryAdapter from "../db_adapter.js";
+import { queryAdapter } from "../db_adapter.js";
 
 export const getPacientes = async (req, res) => {
     try {
