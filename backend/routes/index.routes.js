@@ -4,6 +4,60 @@ import { verifyToken } from '../middlewares/authMiddleware.js';
 
 const router = Router();
 
+// Ruta de test para debug de PostgreSQL
+router.get('/test-db', async (req, res) => {
+    try {
+        console.log('🔧 Test de conexión PostgreSQL...');
+        
+        // Test simple de conexión
+        const [result] = await queryAdapter.query('SELECT NOW() as current_time');
+        
+        console.log('✅ Resultado del test:', result);
+        
+        res.json({
+            success: true,
+            message: 'Base de datos PostgreSQL funcionando',
+            result: result,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('❌ Error en test de BD:', error);
+        res.status(500).json({ 
+            error: error.message,
+            stack: error.stack 
+        });
+    }
+});
+
+// Ruta de test para INSERT con RETURNING
+router.get('/test-insert', async (req, res) => {
+    try {
+        console.log('🔧 Test de INSERT PostgreSQL...');
+        
+        // Test de las tablas existentes
+        const [tables] = await queryAdapter.query(`
+            SELECT table_name 
+            FROM information_schema.tables 
+            WHERE table_schema = 'public'
+        `);
+        
+        console.log('📋 Tablas disponibles:', tables);
+        
+        res.json({
+            success: true,
+            message: 'Tablas de PostgreSQL',
+            tables: tables,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('❌ Error en test de INSERT:', error);
+        res.status(500).json({ 
+            error: error.message,
+            stack: error.stack 
+        });
+    }
+});
+
 router.get('/ping', async (req, res) => {
     try {
         const startTime = Date.now();
