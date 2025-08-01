@@ -12,17 +12,20 @@ CREATE TABLE usuarios (
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Tabla pacientes
+-- Tabla pacientes (actualizada para coincidir con el formulario del frontend)
 CREATE TABLE pacientes (
     id_paciente SERIAL PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    apellido_paterno VARCHAR(100) NOT NULL,
-    apellido_materno VARCHAR(100),
+    id_usuario INTEGER NOT NULL, -- Referencia al nutricionista
+    nombre VARCHAR(255) NOT NULL,
     fecha_nacimiento DATE NOT NULL,
     sexo CHAR(1) CHECK (sexo IN ('M', 'F')) NOT NULL,
     telefono VARCHAR(15),
-    email VARCHAR(150),
-    direccion TEXT,
+    ocupacion VARCHAR(255),
+    nivel_actividad VARCHAR(50) CHECK (nivel_actividad IN ('Bajo', 'Moderado', 'Alto')),
+    objetivo TEXT,
+    horas_sueno INTEGER,
+    habitos TEXT,
+    antecedentes TEXT,
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

@@ -372,4 +372,72 @@ router.get('/usuario-temp/:id', async (req, res) => {
     }
 });
 
+// Endpoint para actualizar la estructura de la tabla pacientes
+router.post('/update-pacientes-table', async (req, res) => {
+    try {
+        console.log('🔧 Actualizando estructura de tabla pacientes...');
+        
+        // Primero verificar si la tabla existe
+        const [existingTable] = await queryAdapter.query(`
+            SELECT table_name 
+            FROM information_schema.tables 
+            WHERE table_schema = 'public' AND table_name = 'pacientes'
+        `);
+
+        if (existingTable.length > 0) {
+            // Hacer backup de datos existentes si los hay
+            const [existingData] = await queryAdapter.query('SELECT * FROM pacientes');
+            
+            // Eliminar tabla antigua
+            await queryAdapter.query('DROP TABLE IF EXISTS pacientes CASCADE');
+            console.log('✅ Tabla antigua eliminada');
+        }
+
+        // Crear nueva tabla con estructura actualizada
+        const newTableSQL = `
+            CREATE TABLE pacientes (
+                id_paciente SERIAL PRIMARY KEY,
+                id_usuario INTEGER NOT NULL,
+                nombre VARCHAR(255) NOT NULL,
+                fecha_nacimiento DATE NOT NULL,
+                sexo CHAR(1) CHECK (sexo IN ('M', 'F')) NOT NULL,
+                telefono VARCHAR(15),
+                ocupacion VARCHAR(255),
+                nivel_actividad VARCHAR(50) CHECK (nivel_actividad IN ('Bajo', 'Moderado', 'Alto')),
+                objetivo TEXT,
+                horas_sueno INTEGER,
+                habitos TEXT,
+                antecedentes TEXT,
+                fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `;
+
+        await queryAdapter.query(newTableSQL);
+        console.log('✅ Nueva tabla pacientes creada');
+
+        // Recrear índice
+        await queryAdapter.query('CREATE INDEX IF NOT EXISTS idx_pacientes_usuario ON pacientes(id_usuario)');
+        
+        res.json({
+            success: true,
+            message: 'Tabla pacientes actualizada exitosamente',
+            new_structure: [
+                'id_paciente', 'id_usuario', 'nombre', 'fecha_nacimiento', 'sexo',
+                'telefono', 'ocupacion', 'nivel_actividad', 'objetivo', 
+                'horas_sueno', 'habitos', 'antecedentes', 'fecha_registro'
+            ],
+            timestamp: new Date().toISOString()
+        });
+
+    } catch (error) {
+        console.error('Error actualizando tabla pacientes:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al actualizar tabla pacientes',
+            message: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
 export default router;
