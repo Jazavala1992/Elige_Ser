@@ -23,7 +23,7 @@ function CardPaciente() {
     telefono: Yup.string()
       .required("El teléfono es obligatorio")
       .matches(/^[0-9]+$/, "El teléfono debe contener solo números")
-      .min(10, "El teléfono debe tener al menos 10 dígitos")
+      .min(8, "El teléfono debe tener al menos 8 dígitos")
       .max(15, "El teléfono no puede tener más de 15 dígitos"),
     ocupacion: Yup.string().required("La ocupación es obligatoria"),
     nivel_actividad: Yup.string().required("El nivel de actividad es obligatorio"),
