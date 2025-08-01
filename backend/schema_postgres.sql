@@ -26,6 +26,7 @@ CREATE TABLE pacientes (
     horas_sueno INTEGER,
     habitos TEXT,
     antecedentes TEXT,
+    activo BOOLEAN DEFAULT TRUE,
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

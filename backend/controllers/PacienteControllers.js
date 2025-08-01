@@ -1,9 +1,10 @@
 import { pool } from "../db.js";
+import queryAdapter from "../db_adapter.js";
 
 export const getPacientes = async (req, res) => {
     try {
       const id_usuario = req.params.id;
-      const [result] = await pool.query("SELECT * FROM Pacientes WHERE id_usuario = ? AND activo = TRUE", [id_usuario]);
+      const [result] = await queryAdapter.query("SELECT * FROM pacientes WHERE id_usuario = ? AND activo = TRUE", [id_usuario]);
       res.json(result); 
     } catch (error) {
       console.error("Error al obtener los pacientes:", error);
@@ -46,8 +47,8 @@ export const createPacientes = async (req, res) => {
       }
   
       // Guardar el paciente en la base de datos
-      const nuevoPaciente = await pool.query(
-        "INSERT INTO Pacientes (id_usuario, nombre, fecha_nacimiento, sexo, telefono, ocupacion, nivel_actividad, objetivo, horas_sueno, habitos, antecedentes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      const nuevoPaciente = await queryAdapter.query(
+        "INSERT INTO pacientes (id_usuario, nombre, fecha_nacimiento, sexo, telefono, ocupacion, nivel_actividad, objetivo, horas_sueno, habitos, antecedentes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         [
           id_usuario,
           nombre,
@@ -83,8 +84,8 @@ export const createPacientes = async (req, res) => {
         antecedentes,
       } = req.body;
   
-      const result = await pool.query(
-        `UPDATE Pacientes 
+      const result = await queryAdapter.query(
+        `UPDATE pacientes 
          SET nombre = ?, telefono = ?, ocupacion = ?, nivel_actividad = ?, objetivo = ?, horas_sueno = ?, habitos = ?, antecedentes = ?
          WHERE id_paciente = ?`,
         [nombre, telefono, ocupacion, nivel_actividad, objetivo, horas_sueno, habitos, antecedentes, req.params.id]
@@ -103,8 +104,8 @@ export const createPacientes = async (req, res) => {
 
   export const deletePacientes = async (req, res) => {
     try {
-      const result = await pool.query(
-        `UPDATE Pacientes 
+      const result = await queryAdapter.query(
+        `UPDATE pacientes 
          SET activo = FALSE 
          WHERE id_paciente = ?`,
         [req.params.id]

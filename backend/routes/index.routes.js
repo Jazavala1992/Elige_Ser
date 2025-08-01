@@ -408,6 +408,7 @@ router.get('/update-pacientes-table', async (req, res) => {
                 horas_sueno INTEGER,
                 habitos TEXT,
                 antecedentes TEXT,
+                activo BOOLEAN DEFAULT TRUE,
                 fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `;
@@ -424,7 +425,7 @@ router.get('/update-pacientes-table', async (req, res) => {
             new_structure: [
                 'id_paciente', 'id_usuario', 'nombre', 'fecha_nacimiento', 'sexo',
                 'telefono', 'ocupacion', 'nivel_actividad', 'objetivo', 
-                'horas_sueno', 'habitos', 'antecedentes', 'fecha_registro'
+                'horas_sueno', 'habitos', 'antecedentes', 'activo', 'fecha_registro'
             ],
             timestamp: new Date().toISOString()
         });
