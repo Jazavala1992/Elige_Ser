@@ -1,23 +1,24 @@
 import { Router } from 'express';
-import { pool } from '../db.js';
+import { queryAdapter, DB_TYPE } from '../db_adapter.js';
 
 const router = Router();
 
 router.get('/ping', async (req, res) => {
     try {
         const startTime = Date.now();
-        const [rows] = await pool.query('SELECT 1 + 1 AS solution, NOW() as server_time');
+        const [rows] = await queryAdapter.query('SELECT 1 + 1 AS solution, NOW() as server_time');
         const endTime = Date.now();
         
         res.json({
             success: true,
+            database_type: DB_TYPE,
             database_response: rows[0],
             connection_time_ms: endTime - startTime,
             database_config: {
-                host: process.env.DB_HOST || process.env.MYSQL_ADDON_HOST,
-                port: process.env.DB_PORT || process.env.MYSQL_ADDON_PORT,
-                database: process.env.DB_NAME || process.env.MYSQL_ADDON_DB,
-                user: process.env.DB_USER || process.env.MYSQL_ADDON_USER
+                host: process.env.DB_HOST || process.env.MYSQL_ADDON_HOST || 'PostgreSQL Connection',
+                port: process.env.DB_PORT || process.env.MYSQL_ADDON_PORT || '5432',
+                database: process.env.DB_NAME || process.env.MYSQL_ADDON_DB || process.env.DATABASE_URL ? 'Connected via URL' : 'Unknown',
+                user: process.env.DB_USER || process.env.MYSQL_ADDON_USER || 'PostgreSQL User'
             },
             timestamp: new Date().toISOString()
         });
@@ -25,16 +26,17 @@ router.get('/ping', async (req, res) => {
         console.error('Database connection error:', error);
         res.status(500).json({ 
             success: false,
+            database_type: DB_TYPE,
             error: 'Database connection failed',
             error_code: error.code,
             error_errno: error.errno,
             error_sqlState: error.sqlState,
             message: error.message,
             database_config: {
-                host: process.env.DB_HOST || process.env.MYSQL_ADDON_HOST,
-                port: process.env.DB_PORT || process.env.MYSQL_ADDON_PORT,
-                database: process.env.DB_NAME || process.env.MYSQL_ADDON_DB,
-                user: process.env.DB_USER || process.env.MYSQL_ADDON_USER
+                host: process.env.DB_HOST || process.env.MYSQL_ADDON_HOST || 'PostgreSQL Connection',
+                port: process.env.DB_PORT || process.env.MYSQL_ADDON_PORT || '5432',
+                database: process.env.DB_NAME || process.env.MYSQL_ADDON_DB || process.env.DATABASE_URL ? 'Connected via URL' : 'Unknown',
+                user: process.env.DB_USER || process.env.MYSQL_ADDON_USER || 'PostgreSQL User'
             },
             timestamp: new Date().toISOString()
         });

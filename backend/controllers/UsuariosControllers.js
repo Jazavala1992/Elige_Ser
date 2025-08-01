@@ -1,4 +1,4 @@
-import {pool} from "../db.js";
+import { queryAdapter } from "../db_adapter.js";
 import bccrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
@@ -17,8 +17,8 @@ export const registerUsuario = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt); // Generar el hash de la contraseña
 
     // Guardar el usuario en la base de datos
-    const query = "INSERT INTO Usuarios (nombre, username, email, password) VALUES (?, ?, ?, ?)";
-    await pool.query(query, [nombre, username, email, hashedPassword]);
+    const query = "INSERT INTO usuarios (nombre, apellido_paterno, email, password) VALUES (?, ?, ?, ?)";
+    await queryAdapter.query(query, [nombre, username, email, hashedPassword]);
 
     res.status(201).json({ message: "Usuario creado exitosamente" });
   } catch (error) {
@@ -60,7 +60,7 @@ export const loginUsuario = async (req, res) => {
     }
 
     // Buscar el usuario por email
-    const [result] = await pool.query("SELECT * FROM Usuarios WHERE email = ?", [email]);
+    const [result] = await queryAdapter.query("SELECT * FROM usuarios WHERE email = ?", [email]);
 
     if (result.length === 0) {
       return res.status(401).json({ success: false, message: "Credenciales inválidas" });
