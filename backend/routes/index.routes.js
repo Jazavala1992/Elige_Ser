@@ -372,8 +372,8 @@ router.get('/usuario-temp/:id', async (req, res) => {
     }
 });
 
-// Endpoint para actualizar la estructura de la tabla pacientes
-router.post('/update-pacientes-table', async (req, res) => {
+// Endpoint para actualizar la estructura de la tabla pacientes (sin autenticación)
+router.get('/update-pacientes-table', async (req, res) => {
     try {
         console.log('🔧 Actualizando estructura de tabla pacientes...');
         
