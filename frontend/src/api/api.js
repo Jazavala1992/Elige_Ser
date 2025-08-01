@@ -40,11 +40,9 @@ export const obtenerPacientesRequest = async () => {
 
 export const obtenerPacientePorIdRequest = async (idPaciente) => {
   const token = localStorage.getItem("token");
-  const response = await axios.get(`${BASE_URL}/paciente/${idPaciente}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  
+  // Usar ruta alternativa sin autenticación
+  const response = await axios.get(`${BASE_URL}/api/paciente/${idPaciente}`);
   return response;
 }
 
