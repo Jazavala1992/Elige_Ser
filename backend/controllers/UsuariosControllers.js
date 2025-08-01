@@ -114,7 +114,7 @@ export const loginUsuario = async (req, res) => {
 
 export const getUsuario = async (req, res) => {
     try {
-        const [result] = await pool.query('SELECT * FROM Usuarios WHERE id_usuario = ? AND activo = TRUE', [req.params.id_usuario]);
+        const [result] = await queryAdapter.query('SELECT * FROM usuarios WHERE id_usuario = ?', [req.params.id]);
         if (result.length === 0) {
             return res.status(404).json({ message: 'Usuario no encontrado' });
         }
@@ -127,7 +127,8 @@ export const getUsuario = async (req, res) => {
 
 export const updateUsuario = async (req, res) => {
     try {
-        const result = await pool.query('UPDATE Usuarios SET ? WHERE id_usuario=?', [req.body, req.params.id_usuario]);
+        const [result] = await queryAdapter.query('UPDATE usuarios SET nombre = ?, apellido_paterno = ?, email = ? WHERE id_usuario = ?', 
+            [req.body.nombre, req.body.apellido_paterno, req.body.email, req.params.id_usuario]);
         if (result.affectedRows === 0) return res.status(404).json({ message: 'Usuario no encontrado' });
         res.json({ message: 'Usuario actualizado' });
     } catch (error) {
@@ -137,7 +138,7 @@ export const updateUsuario = async (req, res) => {
 
 export const deleteUsuario = async (req, res) => {
     try {
-        const result = await pool.query('DELETE FROM Usuarios WHERE id_usuario = ?', [req.params.id_usuario]);
+        const [result] = await queryAdapter.query('DELETE FROM usuarios WHERE id_usuario = ?', [req.params.id_usuario]);
         if (result.affectedRows === 0) return res.status(404).json({ message: 'Usuario no encontrado' });
         res.json({ message: 'Usuario eliminado' });
     } catch (error) {
