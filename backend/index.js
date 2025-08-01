@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import { PORT } from './config.js';
 import indexRoutes from './routes/index.routes.js';
-import setupRoutes from './routes/setup.routes.js';
 import PacientesRoutes from './routes/PacientesRoutes.js';
 import UsuariosRoutes from './routes/UsuariosRoutes.js';
 import ConsultasRoutes from './routes/ConsultaRoutes.js';
@@ -28,7 +27,6 @@ app.use(express.json()); // Habilita el manejo de JSON en las solicitudes
 
 // Rutas
 app.use(indexRoutes);
-app.use(setupRoutes);
 app.use(UsuariosRoutes); 
 app.use(PacientesRoutes);
 app.use(ConsultasRoutes);
