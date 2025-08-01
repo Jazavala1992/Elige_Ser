@@ -2,7 +2,7 @@
 import { pool as mysqlPool } from './db.js';
 import { pool as pgPool } from './db_postgres.js';
 
-const DB_TYPE = process.env.DB_TYPE || 'mysql'; // 'mysql' o 'postgres'
+const DB_TYPE = process.env.DB_TYPE || 'postgres'; // 'postgres' por defecto para Render
 
 let pool;
 let queryAdapter;
