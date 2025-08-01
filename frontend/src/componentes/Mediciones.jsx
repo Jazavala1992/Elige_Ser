@@ -229,13 +229,21 @@ export default function Mediciones({ idConsulta, idPaciente }) {
   };
 
   const enviarResultados = async (id_medicion) => {
+    console.log("enviarResultados - Iniciando con ID:", id_medicion);
+    console.log("Estado actual de datos:", datos);
+    console.log("Información del paciente disponible:", pacienteInfo);
+    
     // Primero calcular los resultados
     const resultadosCalculados = calcularResultadosCompletos(datos);
     
     if (!resultadosCalculados) {
       console.error("No se pudieron calcular los resultados");
+      console.error("Datos actuales:", datos);
+      console.error("¿Paciente cargado?", !!pacienteInfo);
       return;
     }
+
+    console.log("Resultados calculados exitosamente:", resultadosCalculados);
 
     const resultadosTransformados = {
       id_medicion: id_medicion, 
@@ -271,6 +279,8 @@ export default function Mediciones({ idConsulta, idPaciente }) {
 
   // Función separada para calcular resultados y retornar valores
   const calcularResultadosCompletos = (datos) => {
+    console.log("calcularResultadosCompletos - Datos recibidos:", datos);
+    
     const {
     Peso,
     Talla,
@@ -288,8 +298,14 @@ export default function Mediciones({ idConsulta, idPaciente }) {
     sexo,
     } = datos;
 
+    console.log("Datos extraídos para cálculo:");
+    console.log("Peso:", Peso, "Talla:", Talla, "Edad:", edad, "Sexo:", sexo);
+    console.log("Información del paciente:", pacienteInfo);
+
     // Validar que tenemos datos necesarios antes de calcular
     if (!Peso || !Talla || !edad || !sexo) {
+      console.error("Faltan datos necesarios para el cálculo:");
+      console.error("Peso:", Peso, "Talla:", Talla, "Edad:", edad, "Sexo:", sexo);
       return null; // No calcular si no hay datos suficientes
     }
 
