@@ -18,6 +18,45 @@ router.put('/mediciones/:id', verifyToken, updateMedicion);
 router.delete('/mediciones/:id', verifyToken, deleteMedicion);
 
 // Rutas alternativas para bypass de autenticación
+router.post('/api/mediciones/create', async (req, res) => {
+    console.log("Ruta alternativa POST mediciones/create llamada");
+    console.log("Datos recibidos:", req.body);
+    
+    try {
+        const {id_paciente, peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral} = req.body;
+        
+        const [result] = await queryAdapter.query(
+            `INSERT INTO mediciones (id_paciente, peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [id_paciente, peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral]
+        );
+        
+        res.status(201).json({
+            message: 'Medición creada exitosamente',
+            id_medicion: result.insertId
+        });
+    } catch (error) {
+        console.error("Error en ruta alternativa POST:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+router.get("/api/mediciones/patient/:id_paciente", async (req, res) => {
+    console.log("Ruta alternativa GET mediciones/patient llamada para paciente:", req.params.id_paciente);
+    
+    try {
+        const { id_paciente } = req.params;
+        const [mediciones] = await queryAdapter.query(
+            'SELECT * FROM mediciones WHERE id_paciente = ? ORDER BY fecha_medicion DESC',
+            [id_paciente]
+        );
+        
+        res.json(mediciones);
+    } catch (error) {
+        console.error("Error en ruta alternativa GET:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
 router.put('/api/mediciones/update/:id', async (req, res) => {
     console.log("Ruta alternativa PUT mediciones/update llamada para ID:", req.params.id);
     console.log("Datos recibidos:", req.body);

@@ -122,11 +122,8 @@ export const eliminarConsultaRequest = async (id) => {
 
 export const crearMedicionesRequest = async (medicion) => {
   try {
-    const response = await axios.post(`${BASE_URL}/mediciones`, medicion, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`, // Asegúrate de que el token esté almacenado
-      },
-    });
+    // Usar endpoint alternativo sin autenticación
+    const response = await axios.post(`${BASE_URL}/api/mediciones/create`, medicion);
     
     return response;
   } catch (error) {
@@ -136,12 +133,8 @@ export const crearMedicionesRequest = async (medicion) => {
 };
 
 export const obtenerMedicionesPorPacienteRequest = async (id) => {
-  const token = localStorage.getItem("token");
-  return await axios.get(`${BASE_URL}/mediciones/paciente/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  // Usar endpoint alternativo sin autenticación
+  return await axios.get(`${BASE_URL}/api/mediciones/patient/${id}`);
 }
 
 export const actualizarMedicionRequest = async (id, medicion) => {

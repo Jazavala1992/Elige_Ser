@@ -44,6 +44,24 @@ router.get('/ping', async (req, res) => {
     }
 });
 
+// Ruta de prueba para verificar que las rutas API funcionan
+router.get('/api/test', (req, res) => {
+    res.json({
+        success: true,
+        message: 'Las rutas API funcionan correctamente',
+        routes_available: [
+            'POST /api/mediciones/create',
+            'GET /api/mediciones/patient/:id',
+            'PUT /api/mediciones/update/:id',
+            'DELETE /api/mediciones/delete/:id',
+            'POST /api/resultados/create',
+            'GET /api/resultados/patient/:id',
+            'GET /api/paciente/:id'
+        ],
+        timestamp: new Date().toISOString()
+    });
+});
+
 // Endpoint de salud básico que no depende de la DB
 router.get('/health-basic', (req, res) => {
     res.json({
