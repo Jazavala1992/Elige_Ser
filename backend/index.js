@@ -35,6 +35,16 @@ app.get('/api/test-global', (req, res) => {
     });
 });
 
+// Ruta de prueba POST directa en index.js
+app.post('/api/test-post-direct', (req, res) => {
+    res.json({
+        success: true,
+        message: 'POST directo funcionando',
+        body: req.body,
+        timestamp: new Date().toISOString()
+    });
+});
+
 // Rutas
 app.use(indexRoutes);
 app.use(UsuariosRoutes); 
