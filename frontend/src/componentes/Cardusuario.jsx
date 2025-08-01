@@ -30,7 +30,7 @@ function CardUsuario() {
             <h3 className="titleU">Nutricionista:</h3>
             <div>
                 <p className="textU">Nombre: {usuario.nombre}</p>
-                <p className="textU">Usuario: {usuario.username}</p>
+                <p className="textU">Apellido: {usuario.apellido_paterno}</p>
                 <p className="textU">Correo: {usuario.email}</p>
             </div>
             <button className="button">

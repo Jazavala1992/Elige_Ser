@@ -43,7 +43,7 @@ export const loginUsuario = async (req, res) => {
       return res.status(200).json({
         success: true,
         token: "temporary-admin-token",
-        user: { id: 1, nombre: "Admin", username: "admin", email: "admin@admin.com" },
+        user: { id: 1, nombre: "Admin", apellido_paterno: "System", email: "admin@admin.com" },
         message: "Login temporal - configurar variables de entorno DB"
       });
     }
@@ -54,7 +54,7 @@ export const loginUsuario = async (req, res) => {
       return res.status(200).json({
         success: true,
         token: "temporary-test-token",
-        user: { id: 2, nombre: "Test User", username: "testuser", email: "test@test.com" },
+        user: { id: 2, nombre: "Test User", apellido_paterno: "Testing", email: "test@test.com" },
         message: "Login temporal - configurar variables de entorno DB"
       });
     }
@@ -90,7 +90,7 @@ export const loginUsuario = async (req, res) => {
     return res.status(200).json({
       success: true,
       token,
-      user: { id: user.id_usuario, nombre: user.nombre, username: user.username, email: user.email },
+      user: { id: user.id_usuario, nombre: user.nombre, apellido_paterno: user.apellido_paterno, email: user.email },
     });
   } catch (error) {
     console.error("Error en el servidor:", error);
