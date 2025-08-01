@@ -7,6 +7,7 @@ const BASE_URL = import.meta.env.MODE === 'development'
 
 console.log("Modo actual:", import.meta.env.MODE);
 console.log("URL base configurada:", BASE_URL);
+console.log("🔄 API v3.0 - Usando rutas públicas para bypass completo");
 
 // Apis para usuario
 export const crearUsuarioRequest = async (usuario) => {
