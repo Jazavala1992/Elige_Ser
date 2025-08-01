@@ -45,7 +45,7 @@ app.post('/api/test-post-direct', (req, res) => {
     });
 });
 
-// Rutas
+// Rutas - indexRoutes PRIMERO para que las rutas públicas tengan precedencia
 app.use(indexRoutes);
 app.use(UsuariosRoutes); 
 app.use(PacientesRoutes);
