@@ -3,9 +3,8 @@ import { verifyToken } from "../middlewares/authMiddleware.js";
 import { getConsultas, createConsulta, deleteConsulta } from '../controllers/ConsultaController.js';
 
 const router = Router();
-router.use(verifyToken);
 
-router.get('/consultas/:id', getConsultas);
-router.post('/consultas', createConsulta);
-router.delete('/consultas/:id', deleteConsulta);
+router.get('/consultas/:id', verifyToken, getConsultas);
+router.post('/consultas', verifyToken, createConsulta);
+router.delete('/consultas/:id', verifyToken, deleteConsulta);
 export default router;
