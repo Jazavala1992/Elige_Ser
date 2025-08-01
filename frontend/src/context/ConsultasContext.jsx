@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
-import { crearConsultaRequest } from "../api/api";
+import { crearConsultaRequest, eliminarConsultaRequest } from "../api/api";
 
 const ConsultasContext = createContext();
 
@@ -27,11 +27,28 @@ export const ConsultasProvider = ({ children }) => {
     }
   };
 
+  const eliminarConsulta = async (id) => {
+    try {
+      await eliminarConsultaRequest(id);
+      
+      // Actualizar el estado local removiendo la consulta eliminada
+      setConsultas((prevConsultas) => 
+        prevConsultas.filter(consulta => consulta.id_consulta !== parseInt(id))
+      );
+      
+      return { success: true, message: 'Consulta eliminada exitosamente' };
+    } catch (error) {
+      console.error("Error al eliminar consulta:", error);
+      throw error;
+    }
+  };
+
   return (
     <ConsultasContext.Provider value={{ 
       consultas, 
       setConsultas, 
-      crearConsulta 
+      crearConsulta,
+      eliminarConsulta
     }}>
       {children}
     </ConsultasContext.Provider>

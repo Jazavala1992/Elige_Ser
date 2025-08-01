@@ -8,9 +8,10 @@ import {  ResponsiveContainer } from "recharts";
 import { GraficoResultadosCompuesto } from "./GraficoResultadosCompuesto";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { FaEdit, FaTrash } from "react-icons/fa";
 
 export default function Mediciones({ idConsulta, idPaciente }) {
-  const { crearMediciones, medicion, obtenerMedicionesPorPaciente } = useMediciones();
+  const { crearMediciones, medicion, obtenerMedicionesPorPaciente, actualizarMedicion, eliminarMedicion } = useMediciones();
   const { crearResultados, resultadoContext, obtenerResultadosPorPaciente  } = useResultados();
   
   
@@ -39,6 +40,10 @@ export default function Mediciones({ idConsulta, idPaciente }) {
 
   const [resultados, setResultados] = useState([]);
   const [mediciones, setMediciones] = useState([]);
+  
+  // Estados para manejar la edición
+  const [editandoMedicion, setEditandoMedicion] = useState(null);
+  const [datosEdicion, setDatosEdicion] = useState({});
 
   const sexoFactor = (sexo) => (sexo === "M" ? 1 : 0);
 
@@ -393,6 +398,108 @@ export default function Mediciones({ idConsulta, idPaciente }) {
     cargarMediciones();
   }, [idPaciente]);
 
+  // Funciones para manejar edición y eliminación de mediciones
+  const handleEditarMedicion = (medicion) => {
+    setEditandoMedicion(medicion.id_medicion);
+    setDatosEdicion({
+      peso: medicion.peso,
+      talla: medicion.talla,
+      pl_tricipital: medicion.pl_tricipital,
+      pl_bicipital: medicion.pl_bicipital,
+      pl_subescapular: medicion.pl_subescapular,
+      pl_supraespinal: medicion.pl_supraespinal,
+      pl_suprailiaco: medicion.pl_suprailiaco,
+      pl_abdominal: medicion.pl_abdominal,
+      pl_muslo_medial: medicion.pl_muslo_medial,
+      pl_pantorrilla_medial: medicion.pl_pantorrilla_medial,
+      per_brazo_reposo: medicion.per_brazo_reposo,
+      per_brazo_flex: medicion.per_brazo_flex,
+      per_muslo_medio: medicion.per_muslo_medio,
+      per_pantorrilla_medial: medicion.per_pantorrilla_medial,
+      per_cintura: medicion.per_cintura,
+      per_cadera: medicion.per_cadera,
+      diametro_femoral: medicion.diametro_femoral,
+      diametro_biestiloideo: medicion.diametro_biestiloideo,
+      diametro_humeral: medicion.diametro_humeral
+    });
+  };
+
+  const handleGuardarEdicion = async () => {
+    try {
+      await actualizarMedicion(editandoMedicion, datosEdicion);
+      setEditandoMedicion(null);
+      setDatosEdicion({});
+      
+      // Recargar datos
+      await cargarMediciones();
+      await cargarResultados();
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'Medición actualizada exitosamente',
+        timer: 1500,
+        showConfirmButton: false
+      });
+    } catch (error) {
+      console.error("Error al actualizar medición:", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al actualizar la medición',
+        text: 'Inténtalo de nuevo'
+      });
+    }
+  };
+
+  const handleCancelarEdicion = () => {
+    setEditandoMedicion(null);
+    setDatosEdicion({});
+  };
+
+  const handleEliminarMedicion = async (idMedicion) => {
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: '¿Deseas eliminar esta medición? Esta acción no se puede deshacer.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await eliminarMedicion(idMedicion);
+        
+        // Recargar datos
+        await cargarMediciones();
+        await cargarResultados();
+        
+        Swal.fire({
+          title: 'Eliminado',
+          text: 'La medición ha sido eliminada exitosamente.',
+          icon: 'success',
+          timer: 1500,
+          showConfirmButton: false
+        });
+      } catch (error) {
+        console.error("Error al eliminar medición:", error);
+        Swal.fire({
+          title: 'Error',
+          text: 'No se pudo eliminar la medición. Inténtalo de nuevo.',
+          icon: 'error'
+        });
+      }
+    }
+  };
+
+  const handleCambioEdicion = (campo, valor) => {
+    setDatosEdicion(prev => ({
+      ...prev,
+      [campo]: valor
+    }));
+  };
+
   return (
   <div className="mediciones-formulario" style={{marginTop: "90px", maxWidth: "1200px", minHeight: "800px", overflow: "hidden",  }}>
 
@@ -683,6 +790,39 @@ export default function Mediciones({ idConsulta, idPaciente }) {
         <th>Sin datos</th>
       )}
     </tr>
+    {/* Fila de acciones */}
+    {Array.isArray(mediciones) && mediciones.length > 0 && (
+      <tr>
+        <th style={{backgroundColor: '#f8f9fa', fontWeight: 'bold'}}>Acciones</th>
+        {mediciones.map((medicion, index) => (
+          <th key={`actions-${index}`} style={{backgroundColor: '#f8f9fa', padding: '10px', textAlign: 'center'}}>
+            {editandoMedicion === medicion.id_medicion ? (
+              <div style={{display: 'flex', gap: '5px', justifyContent: 'center'}}>
+                <Button color="success" size="sm" onClick={handleGuardarEdicion}>
+                  Guardar
+                </Button>
+                <Button color="secondary" size="sm" onClick={handleCancelarEdicion}>
+                  Cancelar
+                </Button>
+              </div>
+            ) : (
+              <div style={{display: 'flex', gap: '10px', justifyContent: 'center'}}>
+                <FaEdit 
+                  style={{color: '#007bff', cursor: 'pointer', fontSize: '18px'}}
+                  title="Editar medición"
+                  onClick={() => handleEditarMedicion(medicion)}
+                />
+                <FaTrash 
+                  style={{color: '#dc3545', cursor: 'pointer', fontSize: '18px'}}
+                  title="Eliminar medición"
+                  onClick={() => handleEliminarMedicion(medicion.id_medicion)}
+                />
+              </div>
+            )}
+          </th>
+        ))}
+      </tr>
+    )}
   </thead>
   <tbody>
     {[
@@ -710,7 +850,18 @@ export default function Mediciones({ idConsulta, idPaciente }) {
         <td><strong>{nombre}</strong></td> 
         {Array.isArray(mediciones) && mediciones.length > 0 ? (
           mediciones.map((medicion, index) => (
-            <td key={`data-${index}-${clave}`}>{medicion[clave] || "N/A"}</td> 
+            <td key={`data-${index}-${clave}`}>
+              {editandoMedicion === medicion.id_medicion ? (
+                <Input
+                  type="number"
+                  value={datosEdicion[clave] || ''}
+                  onChange={(e) => handleCambioEdicion(clave, e.target.value)}
+                  style={{width: '100%', padding: '5px'}}
+                />
+              ) : (
+                medicion[clave] || "N/A"
+              )}
+            </td> 
           ))
         ) : (
           <td>No hay datos</td>

@@ -100,6 +100,16 @@ export const crearConsultaRequest = async (consulta) => {
   return response;
 }
 
+export const eliminarConsultaRequest = async (id) => {
+  const token = localStorage.getItem("token");
+  const response = await axios.delete(`${BASE_URL}/consultas/${id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response;
+}
+
 // Api para mediciones
 
 export const crearMedicionesRequest = async (medicion) => {
@@ -120,6 +130,24 @@ export const crearMedicionesRequest = async (medicion) => {
 export const obtenerMedicionesPorPacienteRequest = async (id) => {
   const token = localStorage.getItem("token");
   return await axios.get(`${BASE_URL}/mediciones/paciente/${id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+export const actualizarMedicionRequest = async (id, medicion) => {
+  const token = localStorage.getItem("token");
+  return await axios.put(`${BASE_URL}/mediciones/${id}`, medicion, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+export const eliminarMedicionRequest = async (id) => {
+  const token = localStorage.getItem("token");
+  return await axios.delete(`${BASE_URL}/mediciones/${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

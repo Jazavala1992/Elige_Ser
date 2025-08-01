@@ -117,3 +117,28 @@
     margin-top: 5px; /* Espaciado entre el ícono y el texto */
     text-align: center; /* Centra el texto */
 }
+
+.eliminar-container {
+    display: flex;
+    flex-direction: column; /* Coloca el texto debajo del ícono */
+    align-items: center; /* Centra el ícono y el texto horizontalmente */
+    justify-content: center; /* Centra el ícono y el texto verticalmente */
+    margin-top: 10px; /* Espaciado entre el ícono y otros elementos */
+}
+
+.icon.eliminar {
+    font-size: 24px; /* Ajusta el tamaño del ícono */
+    color: #f44336; 
+    transition: color 0.3s ease; 
+}
+
+.icon.eliminar:hover {
+    color: #d32f2f; 
+}
+
+.eliminar-text {
+    font-size: 14px; /* Tamaño de fuente del texto */
+    color: #333; /* Color del texto */
+    margin-top: 5px; /* Espaciado entre el ícono y el texto */
+    text-align: center; /* Centra el texto */
+}

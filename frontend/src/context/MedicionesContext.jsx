@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
-import { crearMedicionesRequest, obtenerMedicionesPorPacienteRequest } from '../api/api';
+import { crearMedicionesRequest, obtenerMedicionesPorPacienteRequest, actualizarMedicionRequest, eliminarMedicionRequest } from '../api/api';
 
 const MedicionesContext = createContext();
 
@@ -35,8 +35,51 @@ export const MedicionesProvider = ({ children }) => {
     }
   };
 
+  const actualizarMedicion = async (id, medicionData) => {
+    try {
+      const response = await actualizarMedicionRequest(id, medicionData);
+      console.log("Medición actualizada:", response.data);
+      
+      // Actualizar el estado local
+      setMediciones(prevMediciones => 
+        prevMediciones.map(medicion => 
+          medicion.id_medicion === parseInt(id) ? { ...medicion, ...medicionData } : medicion
+        )
+      );
+      
+      return response.data;
+    } catch (error) {
+      console.error("Error al actualizar medición:", error);
+      throw error;
+    }
+  };
+
+  const eliminarMedicion = async (id) => {
+    try {
+      const response = await eliminarMedicionRequest(id);
+      console.log("Medición eliminada:", response.data);
+      
+      // Actualizar el estado local removiendo la medición eliminada
+      setMediciones(prevMediciones => 
+        prevMediciones.filter(medicion => medicion.id_medicion !== parseInt(id))
+      );
+      
+      return response.data;
+    } catch (error) {
+      console.error("Error al eliminar medición:", error);
+      throw error;
+    }
+  };
+
   return (
-    <MedicionesContext.Provider value={{ medicion, setMediciones, crearMediciones, obtenerMedicionesPorPaciente }}>
+    <MedicionesContext.Provider value={{ 
+      medicion, 
+      setMediciones, 
+      crearMediciones, 
+      obtenerMedicionesPorPaciente,
+      actualizarMedicion,
+      eliminarMedicion
+    }}>
       {children}
     </MedicionesContext.Provider>
   );
