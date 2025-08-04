@@ -228,9 +228,6 @@ router.put('/mediciones-temp/:id', async (req, res) => {
         });
     }
 });
-        res.status(500).json({ error: error.message });
-    }
-});
 
 router.delete('/mediciones-temp/:id', async (req, res) => {
     console.log("🔧 Ruta temporal DELETE mediciones-temp llamada para ID:", req.params.id);

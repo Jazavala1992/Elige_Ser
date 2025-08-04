@@ -925,16 +925,16 @@ router.get('/setup-database', async (req, res) => {
     }
 });
 
-// Endpoint de debug para probar middleware
-router.get('/debug-auth', verifyToken, (req, res) => {
-    res.json({
-        success: true,
-        message: 'Authentication successful',
-        user: req.user,
-        userId: req.userId,
-        timestamp: new Date().toISOString()
-    });
-});
+// Endpoint de debug para probar middleware - COMENTADO
+// router.get('/debug-auth', verifyToken, (req, res) => {
+//     res.json({
+//         success: true,
+//         message: 'Authentication successful',
+//         user: req.user,
+//         userId: req.userId,
+//         timestamp: new Date().toISOString()
+//     });
+// });
 
 // Endpoint temporal para obtener usuario admin sin autenticación
 router.get('/usuario-temp/1', async (req, res) => {
