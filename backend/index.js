@@ -81,7 +81,7 @@ app.get('/api/test-db-connection', async (req, res) => {
 });
 
 // Ruta para verificar estructura de tablas
-app.get('/api/test-db-tables', async (req, res) => {
+app.get('/debug/test-db-tables', async (req, res) => {
     try {
         const { queryAdapter } = await import('./db_adapter.js');
         console.log("🔧 Test - Verificando tablas existentes");
