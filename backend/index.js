@@ -81,7 +81,7 @@ app.get('/api/test-db-connection', async (req, res) => {
 });
 
 // Ruta para verificar estructura de tablas
-app.get('/debug/test-db-tables', async (req, res) => {
+app.get('/admin/test-db-tables', async (req, res) => {
     try {
         const { queryAdapter } = await import('./db_adapter.js');
         console.log("🔧 Test - Verificando tablas existentes");
@@ -111,7 +111,7 @@ app.get('/debug/test-db-tables', async (req, res) => {
 });
 
 // Ruta para verificar estructura de tabla pacientes
-app.get('/debug/pacientes-schema', async (req, res) => {
+app.get('/admin/pacientes-schema', async (req, res) => {
     try {
         const { queryAdapter } = await import('./db_adapter.js');
         console.log("🔧 Test - Verificando estructura tabla pacientes");
