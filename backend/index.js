@@ -110,6 +110,37 @@ app.get('/debug/test-db-tables', async (req, res) => {
     }
 });
 
+// Ruta para verificar estructura de tabla pacientes
+app.get('/debug/pacientes-schema', async (req, res) => {
+    try {
+        const { queryAdapter } = await import('./db_adapter.js');
+        console.log("🔧 Test - Verificando estructura tabla pacientes");
+        
+        // Verificar estructura de la tabla pacientes
+        const [columns] = await queryAdapter.query(`
+            SELECT column_name, data_type, is_nullable, column_default
+            FROM information_schema.columns 
+            WHERE table_name = 'pacientes' 
+            AND table_schema = 'public'
+            ORDER BY ordinal_position
+        `);
+        
+        res.json({
+            success: true,
+            message: 'Estructura tabla pacientes',
+            columns: columns,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error("❌ Error verificando estructura:", error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
 // ===============================================
 // RUTAS DE TESTING CRUD COMPLETO SIN AUTENTICACIÓN
 // ===============================================
