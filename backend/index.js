@@ -55,6 +55,31 @@ app.post('/api/test-post-direct', (req, res) => {
     });
 });
 
+// Ruta de prueba de conexión a la base de datos
+app.get('/api/test-db-connection', async (req, res) => {
+    try {
+        const { queryAdapter } = await import('./db_adapter.js');
+        console.log("🔧 Test - Verificando conexión a la base de datos");
+        
+        // Consulta simple para verificar conexión
+        const [result] = await queryAdapter.query('SELECT 1 as test');
+        
+        res.json({
+            success: true,
+            message: 'Conexión a la base de datos exitosa',
+            data: result[0],
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error("❌ Error conexión DB:", error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
 // ===============================================
 // RUTAS DE TESTING CRUD COMPLETO SIN AUTENTICACIÓN
 // ===============================================
