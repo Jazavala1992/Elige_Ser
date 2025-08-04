@@ -20,7 +20,8 @@ const corsOptions = {
             'http://localhost:5173',  // Vite dev
             'http://localhost:3000',  // React dev
             'https://elije-ser.netlify.app',  // Producción Netlify
-            'https://elije-ser.onrender.com'  // Producción Render
+            'https://elige-ser.onrender.com',  // Producción Frontend Render
+            'https://elije-ser.onrender.com'  // Producción Render alternativo
         ];
         
         // Permitir requests sin origin (como apps móviles, Postman, etc.)
@@ -35,11 +36,14 @@ const corsOptions = {
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     optionsSuccessStatus: 200
 };
 
 app.use(cors(corsOptions));
+
+// Middleware adicional para manejar preflight OPTIONS
+app.options('*', cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
