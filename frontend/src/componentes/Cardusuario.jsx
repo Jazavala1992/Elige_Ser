@@ -1,6 +1,7 @@
 import "../css/cardusuario.css"; 
 import React, { useEffect, useState } from "react";
-import { FaUserDoctor, FaEdit } from "react-icons/fa6";
+import { FaUserDoctor } from "react-icons/fa6";
+import { FaEdit } from "react-icons/fa";
 import { useUsuarios } from "../context/UsuarioContext.jsx";
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from "reactstrap";
 import { Formik, Form, Field, ErrorMessage } from "formik";
