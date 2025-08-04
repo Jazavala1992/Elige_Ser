@@ -4,13 +4,12 @@ export const crearResultados = async (req, res) => {
     const {id_medicion, imc, suma_pliegues, porcentaje_grasa, masa_muscular_kg, porcentaje_masa_muscular, masa_osea, masa_residual} = req.body;
     try {
         const [result] = await queryAdapter.query(
-            'INSERT INTO resultados (id_medicion, imc, suma_pliegues, porcentaje_grasa, masa_muscular_kg, porcentaje_masa_muscular, masa_osea, masa_residual) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id_resultado',
+            'INSERT INTO resultados (id_medicion, imc, suma_pliegues, porcentaje_grasa, masa_muscular_kg, porcentaje_masa_muscular, masa_osea, masa_residual) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id_resultado',
             [id_medicion, imc, suma_pliegues, porcentaje_grasa, masa_muscular_kg, porcentaje_masa_muscular, masa_osea, masa_residual]
         );
         
-        // Para PostgreSQL, el ID está en result[0].id_resultado si usamos RETURNING
-        // Para MySQL, está en result.insertId
-        const id_resultado = result[0]?.id_resultado || result.insertId;
+        // PostgreSQL devuelve el ID en result[0].id_resultado con RETURNING
+        const id_resultado = result[0].id_resultado;
         
         res.status(201).json({
             message: 'Resultados guardados correctamente',
@@ -37,7 +36,7 @@ export const obtenerResultadosPorPaciente = async (req, res) => {
                 INNER JOIN mediciones m ON m.id_medicion = r.id_medicion
                 INNER JOIN consultas c ON m.id_consulta = c.id_consulta
                 INNER JOIN pacientes p ON c.id_paciente = p.id_paciente
-            WHERE p.id_paciente = ?`,
+            WHERE p.id_paciente = $1`,
             [id_paciente]
         );
         

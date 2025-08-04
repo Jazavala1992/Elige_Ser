@@ -35,4 +35,4 @@ router.get("/resultados-temp/paciente/:id_paciente", (req, res) => {
     obtenerResultadosPorPaciente(req, res);
 });
 
-export default router
+export default router;

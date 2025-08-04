@@ -33,21 +33,21 @@ router.post('/api/mediciones/create', async (req, res) => {
         // Primero crear una consulta (requerida para mediciones)
         const today = new Date().toISOString().split('T')[0];
         const [consultaResult] = await queryAdapter.query(
-            'INSERT INTO consultas (id_paciente, fecha_consulta, observaciones) VALUES (?, ?, ?) RETURNING id_consulta',
+            'INSERT INTO consultas (id_paciente, fecha_consulta, observaciones) VALUES ($1, $2, $3) RETURNING id_consulta',
             [id_paciente, today, 'Consulta creada automáticamente para nueva medición']
         );
         
-        const idConsulta = consultaResult[0]?.id_consulta;
+        const idConsulta = consultaResult[0].id_consulta;
         console.log("✅ Consulta creada con ID:", idConsulta);
         
         // Crear la medición asociada a la consulta
         const [result] = await queryAdapter.query(
             `INSERT INTO mediciones (id_consulta, peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id_medicion`,
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20) RETURNING id_medicion`,
             [idConsulta, peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral]
         );
         
-        const idMedicion = result[0]?.id_medicion;
+        const idMedicion = result[0].id_medicion;
         console.log("✅ Medición creada con ID:", idMedicion);
         
         res.status(201).json({
@@ -78,7 +78,7 @@ router.get("/api/mediciones/patient/:id_paciente", async (req, res) => {
             SELECT m.*, c.id_consulta, c.fecha_consulta 
             FROM mediciones m
             INNER JOIN consultas c ON m.id_consulta = c.id_consulta
-            WHERE c.id_paciente = ? 
+            WHERE c.id_paciente = $1 
             ORDER BY m.fecha_medicion DESC
         `, [id_paciente]);
         
@@ -107,7 +107,7 @@ router.put('/api/mediciones/update/:id', async (req, res) => {
         const {peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral} = req.body;
         
         // Verificar que la medición existe
-        const [existing] = await queryAdapter.query('SELECT id_medicion FROM mediciones WHERE id_medicion = ?', [id]);
+        const [existing] = await queryAdapter.query('SELECT id_medicion FROM mediciones WHERE id_medicion = $1', [id]);
         
         if (existing.length === 0) {
             return res.status(404).json({ 
@@ -119,12 +119,12 @@ router.put('/api/mediciones/update/:id', async (req, res) => {
         
         const [result] = await queryAdapter.query(
             `UPDATE mediciones SET 
-             peso = ?, talla = ?, pl_tricipital = ?, pl_bicipital = ?, pl_subescapular = ?, 
-             pl_supraespinal = ?, pl_suprailiaco = ?, pl_abdominal = ?, pl_muslo_medial = ?, 
-             pl_pantorrilla_medial = ?, per_brazo_reposo = ?, per_brazo_flex = ?, per_muslo_medio = ?, 
-             per_pantorrilla_medial = ?, per_cintura = ?, per_cadera = ?, diametro_femoral = ?, 
-             diametro_biestiloideo = ?, diametro_humeral = ?
-             WHERE id_medicion = ?`,
+             peso = $1, talla = $2, pl_tricipital = $3, pl_bicipital = $4, pl_subescapular = $5, 
+             pl_supraespinal = $1, pl_suprailiaco = $2, pl_abdominal = $3, pl_muslo_medial = $4, 
+             pl_pantorrilla_medial = $1, per_brazo_reposo = $2, per_brazo_flex = $3, per_muslo_medio = $4, 
+             per_pantorrilla_medial = $1, per_cintura = $2, per_cadera = $3, diametro_femoral = $4, 
+             diametro_biestiloideo = $1, diametro_humeral = $2
+             WHERE id_medicion = $1`,
             [peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral, id]
         );
         
@@ -152,7 +152,7 @@ router.delete('/api/mediciones/delete/:id', async (req, res) => {
         const { id } = req.params;
         
         // Verificar que la medición existe antes de eliminar
-        const [existing] = await queryAdapter.query('SELECT id_medicion FROM mediciones WHERE id_medicion = ?', [id]);
+        const [existing] = await queryAdapter.query('SELECT id_medicion FROM mediciones WHERE id_medicion = $1', [id]);
         
         if (existing.length === 0) {
             return res.status(404).json({ 
@@ -162,7 +162,7 @@ router.delete('/api/mediciones/delete/:id', async (req, res) => {
             });
         }
         
-        const [result] = await queryAdapter.query('DELETE FROM mediciones WHERE id_medicion = ?', [id]);
+        const [result] = await queryAdapter.query('DELETE FROM mediciones WHERE id_medicion = $1', [id]);
         
         console.log("✅ Medición eliminada exitosamente");
         res.json({
@@ -191,7 +191,7 @@ router.put('/mediciones-temp/:id', async (req, res) => {
         const {peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral} = req.body;
         
         // Verificar que la medición existe
-        const [existing] = await queryAdapter.query('SELECT id_medicion FROM mediciones WHERE id_medicion = ?', [id]);
+        const [existing] = await queryAdapter.query('SELECT id_medicion FROM mediciones WHERE id_medicion = $1', [id]);
         
         if (existing.length === 0) {
             return res.status(404).json({ 
@@ -203,12 +203,12 @@ router.put('/mediciones-temp/:id', async (req, res) => {
         
         const [result] = await queryAdapter.query(
             `UPDATE mediciones SET 
-             peso = ?, talla = ?, pl_tricipital = ?, pl_bicipital = ?, pl_subescapular = ?, 
-             pl_supraespinal = ?, pl_suprailiaco = ?, pl_abdominal = ?, pl_muslo_medial = ?, 
-             pl_pantorrilla_medial = ?, per_brazo_reposo = ?, per_brazo_flex = ?, per_muslo_medio = ?, 
-             per_pantorrilla_medial = ?, per_cintura = ?, per_cadera = ?, diametro_femoral = ?, 
-             diametro_biestiloideo = ?, diametro_humeral = ?
-             WHERE id_medicion = ?`,
+             peso = $1, talla = $2, pl_tricipital = $3, pl_bicipital = $4, pl_subescapular = $5, 
+             pl_supraespinal = $1, pl_suprailiaco = $2, pl_abdominal = $3, pl_muslo_medial = $4, 
+             pl_pantorrilla_medial = $1, per_brazo_reposo = $2, per_brazo_flex = $3, per_muslo_medio = $4, 
+             per_pantorrilla_medial = $1, per_cintura = $2, per_cadera = $3, diametro_femoral = $4, 
+             diametro_biestiloideo = $1, diametro_humeral = $2
+             WHERE id_medicion = $1`,
             [peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral, id]
         );
         
@@ -236,7 +236,7 @@ router.delete('/mediciones-temp/:id', async (req, res) => {
         const { id } = req.params;
         
         // Verificar que la medición existe antes de eliminar
-        const [existing] = await queryAdapter.query('SELECT id_medicion FROM mediciones WHERE id_medicion = ?', [id]);
+        const [existing] = await queryAdapter.query('SELECT id_medicion FROM mediciones WHERE id_medicion = $1', [id]);
         
         if (existing.length === 0) {
             return res.status(404).json({ 
@@ -246,7 +246,7 @@ router.delete('/mediciones-temp/:id', async (req, res) => {
             });
         }
         
-        const [result] = await queryAdapter.query('DELETE FROM mediciones WHERE id_medicion = ?', [id]);
+        const [result] = await queryAdapter.query('DELETE FROM mediciones WHERE id_medicion = $1', [id]);
         
         console.log("✅ Medición temporal eliminada exitosamente");
         res.json({

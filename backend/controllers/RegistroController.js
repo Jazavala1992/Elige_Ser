@@ -11,7 +11,7 @@ export const registrarLog = async (req, res) => {
 
   try {
     const [result] = await queryAdapter.query(
-      "INSERT INTO logs_acceso (id_usuario, ip, evento, navegador, fecha_hora) VALUES (?, ?, ?, ?, ?)",
+      "INSERT INTO logs_acceso (id_usuario, ip, evento, navegador, fecha_hora) VALUES ($1, $2, $3, $4, $5)",
       [id_usuario, ip, evento, navegador, fecha_hora]
     );
     res.status(201).json({ message: "Registro guardado exitosamente" });

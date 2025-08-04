@@ -7,4 +7,5 @@ const router = Router();
 router.get('/consultas/:id', verifyToken, getConsultas);
 router.post('/consultas', verifyToken, createConsulta);
 router.delete('/consultas/:id', verifyToken, deleteConsulta);
+
 export default router;
