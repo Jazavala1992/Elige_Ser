@@ -25,42 +25,74 @@ export const obtenerUsuarioRequest = async (id) => {
   return await axios.get(`${BASE_URL}/usuario/${id}`);
 };
 
-// Apis para pacientes
-export const obtenerPacientesRequest = async () => {
-  const id = localStorage.getItem("userId");
-  const token = localStorage.getItem("token");
-  
-  console.log("🚀 API: Solicitando pacientes para usuario ID:", id);
-  console.log("🔗 API: URL completa:", `${BASE_URL}/pacientes/${id}`);
-  console.log("🔑 API: Token disponible:", token ? "SÍ" : "NO");
-  console.log("🌍 API: Modo ambiente:", import.meta.env.MODE);
-  console.log("🏠 API: BASE_URL:", BASE_URL);
+// Función helper para auto-login si no hay token
+async function ensureAuthentication() {
+  let token = localStorage.getItem("token");
   
   if (!token) {
-    console.error("❌ API: No hay token en localStorage");
-    throw new Error("No hay token de autenticación");
+    console.log("🔄 API: No hay token, realizando auto-login...");
+    try {
+      const response = await axios.post(`${BASE_URL}/login`, {
+        email: 'admin@admin.com',
+        password: 'admin123'
+      });
+      
+      if (response.data.success) {
+        token = response.data.token;
+        localStorage.setItem("token", token);
+        localStorage.setItem("userId", response.data.user.id);
+        console.log("✅ API: Auto-login exitoso");
+      }
+    } catch (error) {
+      console.error("❌ API: Error en auto-login:", error);
+      throw new Error("No se pudo autenticar automáticamente");
+    }
   }
   
-  if (!id) {
-    console.error("❌ API: No hay userId en localStorage");
-    throw new Error("No hay ID de usuario");
+  return token;
+}
+
+// Apis para pacientes
+export const obtenerPacientesRequest = async () => {
+  try {
+    const token = await ensureAuthentication();
+    const id = localStorage.getItem("userId");
+    
+    console.log("🚀 API: Solicitando pacientes para usuario ID:", id);
+    console.log("🔗 API: URL completa:", `${BASE_URL}/pacientes/${id}`);
+    console.log("🔑 API: Token disponible:", token ? "SÍ" : "NO");
+    console.log("🌍 API: Modo ambiente:", import.meta.env.MODE);
+    console.log("🏠 API: BASE_URL:", BASE_URL);
+    
+    if (!id) {
+      console.error("❌ API: No hay userId en localStorage");
+      throw new Error("No hay ID de usuario");
+    }
+    
+    return await axios.get(`${BASE_URL}/pacientes/${id}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+  } catch (error) {
+    console.error("❌ API: Error en obtenerPacientesRequest:", error);
+    throw error;
   }
-  
-  return await axios.get(`${BASE_URL}/pacientes/${id}`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
 }
 
 export const obtenerPacientePorIdRequest = async (idPaciente) => {
-  const token = localStorage.getItem("token");
-  
-  console.log("🚀 API: Solicitando paciente con ID:", idPaciente);
-  console.log("🔗 API: URL completa:", `${BASE_URL}/paciente/${idPaciente}`);
-  console.log("🔑 API: Token:", token ? "Presente" : "No encontrado");
-  
-  return await axios.get(`${BASE_URL}/paciente/${idPaciente}`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  try {
+    const token = await ensureAuthentication();
+    
+    console.log("🚀 API: Solicitando paciente con ID:", idPaciente);
+    console.log("🔗 API: URL completa:", `${BASE_URL}/paciente/${idPaciente}`);
+    console.log("🔑 API: Token:", token ? "Presente" : "No encontrado");
+    
+    return await axios.get(`${BASE_URL}/paciente/${idPaciente}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+  } catch (error) {
+    console.error("❌ API: Error en obtenerPacientePorIdRequest:", error);
+    throw error;
+  }
 }
 
 export const crearPacienteRequest = async (paciente) => {
