@@ -26,6 +26,16 @@ const corsOptions = {
 app.use(cors(corsOptions)); // Habilita CORS para el frontend
 app.use(express.json()); // Habilita el manejo de JSON en las solicitudes
 
+// Ruta básica sin dependencias
+app.get('/', (req, res) => {
+    res.json({
+        success: true,
+        message: 'Servidor ElijeSer funcionando correctamente',
+        timestamp: new Date().toISOString(),
+        version: '2.0.0'
+    });
+});
+
 // Ruta de prueba global para verificar que no hay middleware global
 app.get('/api/test-global', (req, res) => {
     res.json({
