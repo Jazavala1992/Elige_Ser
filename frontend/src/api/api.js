@@ -32,6 +32,19 @@ export const obtenerPacientesRequest = async () => {
   
   console.log("🚀 API: Solicitando pacientes para usuario ID:", id);
   console.log("🔗 API: URL completa:", `${BASE_URL}/pacientes/${id}`);
+  console.log("🔑 API: Token disponible:", token ? "SÍ" : "NO");
+  console.log("🌍 API: Modo ambiente:", import.meta.env.MODE);
+  console.log("🏠 API: BASE_URL:", BASE_URL);
+  
+  if (!token) {
+    console.error("❌ API: No hay token en localStorage");
+    throw new Error("No hay token de autenticación");
+  }
+  
+  if (!id) {
+    console.error("❌ API: No hay userId en localStorage");
+    throw new Error("No hay ID de usuario");
+  }
   
   return await axios.get(`${BASE_URL}/pacientes/${id}`, {
     headers: { Authorization: `Bearer ${token}` }
