@@ -25,8 +25,8 @@ export const loginUsuario = async (req, res) => {
         const isPasswordValid = await bcrypt.compare(password, result[0].password);
         if (!isPasswordValid) return res.status(401).json({ message: "Credenciales inválidas" });
 
-        const token = jwt.sign({ id: result[0].id_usuario }, "secret_key", { expiresIn: "1h" });
-        const refreshToken = jwt.sign({ id: result[0].id_usuario }, "secret_key_refresh", { expiresIn: "7d" });
+        const token = jwt.sign({ id: result[0].id_usuario }, process.env.JWT_SECRET || "secret_key", { expiresIn: "1h" });
+        const refreshToken = jwt.sign({ id: result[0].id_usuario }, process.env.JWT_SECRET_REFRESH || "secret_key_refresh", { expiresIn: "7d" });
 
         res.json({ token, refreshToken });
     } catch (error) {

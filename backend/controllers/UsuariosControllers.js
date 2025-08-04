@@ -83,8 +83,8 @@ export const loginUsuario = async (req, res) => {
       return res.status(401).json({ success: false, message: "Credenciales inválidas" });
     }
 
-    // Generar un token JWT
-    const token = jwt.sign({ id: user.id_usuario }, "secret_key", { expiresIn: "1h" });
+    // Generar un token JWT usando la misma clave que el middleware
+    const token = jwt.sign({ id: user.id_usuario }, process.env.JWT_SECRET || "secret_key", { expiresIn: "1h" });
 
     return res.status(200).json({
       success: true,
