@@ -11,7 +11,7 @@ export const sanitizeInput = (req, res, next) => {
   next();
 };
 
-// Validaciones para pacientes
+// Validaciones para pacientes - sincronizado con PacienteControllers.js
 export const validatePatientCreation = [
   body('nombre')
     .notEmpty()
@@ -19,25 +19,47 @@ export const validatePatientCreation = [
     .isLength({ min: 2, max: 100 })
     .withMessage('El nombre debe tener entre 2 y 100 caracteres'),
   
-  body('apellido')
+  body('fecha_nacimiento')
     .notEmpty()
-    .withMessage('El apellido es requerido')
-    .isLength({ min: 2, max: 100 })
-    .withMessage('El apellido debe tener entre 2 y 100 caracteres'),
+    .withMessage('La fecha de nacimiento es requerida')
+    .isISO8601()
+    .withMessage('La fecha de nacimiento debe tener formato válido (YYYY-MM-DD)'),
   
-  body('edad')
-    .isInt({ min: 0, max: 150 })
-    .withMessage('La edad debe ser un número entre 0 y 150'),
+  body('sexo')
+    .notEmpty()
+    .withMessage('El sexo es requerido')
+    .isIn(['M', 'F'])
+    .withMessage('El sexo debe ser M o F'),
   
   body('telefono')
-    .optional()
-    .isLength({ min: 10, max: 15 })
-    .withMessage('El teléfono debe tener entre 10 y 15 caracteres'),
+    .notEmpty()
+    .withMessage('El teléfono es requerido')
+    .isLength({ min: 7, max: 15 })
+    .withMessage('El teléfono debe tener entre 7 y 15 caracteres'),
   
-  body('email')
-    .optional()
-    .isEmail()
-    .withMessage('Email inválido')
+  body('ocupacion')
+    .notEmpty()
+    .withMessage('La ocupación es requerida'),
+  
+  body('nivel_actividad')
+    .notEmpty()
+    .withMessage('El nivel de actividad es requerido'),
+  
+  body('objetivo')
+    .notEmpty()
+    .withMessage('El objetivo es requerido'),
+  
+  body('horas_sueno')
+    .isInt({ min: 1, max: 24 })
+    .withMessage('Las horas de sueño deben ser un número entre 1 y 24'),
+  
+  body('habitos')
+    .notEmpty()
+    .withMessage('Los hábitos son requeridos'),
+  
+  body('antecedentes')
+    .notEmpty()
+    .withMessage('Los antecedentes son requeridos')
 ];
 
 export const validatePatientUpdate = [
@@ -46,25 +68,25 @@ export const validatePatientUpdate = [
     .isLength({ min: 2, max: 100 })
     .withMessage('El nombre debe tener entre 2 y 100 caracteres'),
   
-  body('apellido')
+  body('fecha_nacimiento')
     .optional()
-    .isLength({ min: 2, max: 100 })
-    .withMessage('El apellido debe tener entre 2 y 100 caracteres'),
+    .isISO8601()
+    .withMessage('La fecha de nacimiento debe tener formato válido (YYYY-MM-DD)'),
   
-  body('edad')
+  body('sexo')
     .optional()
-    .isInt({ min: 0, max: 150 })
-    .withMessage('La edad debe ser un número entre 0 y 150'),
+    .isIn(['M', 'F'])
+    .withMessage('El sexo debe ser M o F'),
   
   body('telefono')
     .optional()
-    .isLength({ min: 10, max: 15 })
-    .withMessage('El teléfono debe tener entre 10 y 15 caracteres'),
+    .isLength({ min: 7, max: 15 })
+    .withMessage('El teléfono debe tener entre 7 y 15 caracteres'),
   
-  body('email')
+  body('horas_sueno')
     .optional()
-    .isEmail()
-    .withMessage('Email inválido')
+    .isInt({ min: 1, max: 24 })
+    .withMessage('Las horas de sueño deben ser un número entre 1 y 24')
 ];
 
 export const validatePatientId = [

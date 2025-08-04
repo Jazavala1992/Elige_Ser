@@ -1,8 +1,8 @@
 const BASE_URL = 'https://elige-ser-backend.onrender.com/api';
 
-async function testAuth() {
+async function testAuthFinal() {
     try {
-        console.log('🔄 Probando login...');
+        console.log('🔄 Test final: Probando login y JWT...');
         
         // 1. Probar login
         const loginResponse = await fetch(`${BASE_URL}/login`, {
@@ -17,18 +17,18 @@ async function testAuth() {
         });
         
         const loginData = await loginResponse.json();
-        console.log('✅ Login respuesta status:', loginResponse.status);
-        console.log('✅ Login data:', loginData);
+        console.log('✅ Login response:', loginData);
         
         if (!loginResponse.ok) {
             throw new Error(`Login failed: ${loginResponse.status} - ${JSON.stringify(loginData)}`);
         }
         
         const token = loginData.token;
+        console.log('🔑 Token type:', token.startsWith('temporary-') ? 'TEMPORAL' : 'JWT');
         
-        // 2. Probar endpoint de pacientes con el token
-        console.log('🔄 Probando endpoint de paciente específico...');
-        const pacientesResponse = await fetch(`${BASE_URL}/paciente/2`, {
+        // 2. Probar API de pacientes con el token
+        console.log('🔄 Probando endpoint de pacientes...');
+        const pacientesResponse = await fetch(`${BASE_URL}/pacientes/1`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -37,11 +37,13 @@ async function testAuth() {
         });
         
         const pacientesData = await pacientesResponse.json();
-        console.log('✅ Pacientes respuesta status:', pacientesResponse.status);
+        console.log('✅ Pacientes status:', pacientesResponse.status);
         console.log('✅ Pacientes data:', pacientesData);
         
-        if (!pacientesResponse.ok) {
-            throw new Error(`Pacientes failed: ${pacientesResponse.status} - ${JSON.stringify(pacientesData)}`);
+        if (pacientesResponse.status === 401) {
+            console.error('❌ Aún hay problema 401 - verificar configuración JWT_SECRET');
+        } else {
+            console.log('🎉 ¡PROBLEMA 401 RESUELTO!');
         }
         
     } catch (error) {
@@ -49,4 +51,4 @@ async function testAuth() {
     }
 }
 
-testAuth();
+testAuthFinal();

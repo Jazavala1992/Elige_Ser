@@ -15,7 +15,6 @@ export const getPacientes = async (req, res) => {
 export const createPacientes = async (req, res) => {
     try {
       const {
-        id_usuario,
         nombre,
         fecha_nacimiento,
         sexo,
@@ -27,6 +26,9 @@ export const createPacientes = async (req, res) => {
         habitos,
         antecedentes,
       } = req.body;
+  
+      // Obtener id_usuario del token autenticado
+      const id_usuario = req.userId;
   
       // Verificar que todos los campos requeridos estén presentes
       if (
