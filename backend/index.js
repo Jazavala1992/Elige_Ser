@@ -135,6 +135,52 @@ app.get('/api/check-usuarios', async (req, res) => {
     }
 });
 
+// Ruta para crear usuario de prueba
+app.post('/api/create-test-user', async (req, res) => {
+    try {
+        const { queryAdapter } = await import('./db_adapter.js');
+        console.log("🔧 Test - Creando usuario de prueba");
+        
+        // Primero verificar si ya existe
+        const [existing] = await queryAdapter.query(
+            'SELECT id_usuario FROM usuarios WHERE email = ?', 
+            ['zavachs1992@gmail.com']
+        );
+        
+        if (existing.length > 0) {
+            res.json({
+                success: true,
+                message: 'Usuario de prueba ya existe',
+                user_id: existing[0].id_usuario,
+                email: 'zavachs1992@gmail.com',
+                timestamp: new Date().toISOString()
+            });
+            return;
+        }
+        
+        // Crear usuario de prueba
+        const [result] = await queryAdapter.query(`
+            INSERT INTO usuarios (nombre, email, password) 
+            VALUES (?, ?, ?) 
+            RETURNING id_usuario, nombre, email
+        `, ['Usuario Test', 'zavachs1992@gmail.com', 'hashed_password_placeholder']);
+        
+        res.json({
+            success: true,
+            message: 'Usuario de prueba creado exitosamente',
+            data: result[0],
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error("❌ Error creando usuario test:", error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
 // Ruta para verificar estructura de tablas
 app.get('/admin/test-db-tables', async (req, res) => {
     try {
