@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
-import { crearResultadosRequest, obtenerResultadosPorPacienteRequest } from "../api/api";
+import { crearResultadoRequest, obtenerResultadosPorPacienteRequest } from "../api/api";
 
 const ResultadosContext = createContext();
 
@@ -8,7 +8,7 @@ export const ResultadosProvider = ({ children }) => {
 
   const crearResultados = async (resultados) => {
     try {
-      const response = await crearResultadosRequest(resultados);
+      const response = await crearResultadoRequest(resultados);
       return response.data;
     } catch (error) {
       console.error("Error al crear resultados:", error);
