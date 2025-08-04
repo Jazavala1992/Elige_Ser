@@ -29,6 +29,32 @@ export const createConsulta = async (req, res) => {
     }
 };
 
+export const updateConsulta = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { fecha_consulta, hora, observaciones } = req.body;
+        
+        const result = await queryAdapter(
+            'UPDATE consultas SET fecha_consulta = $1, hora = $2, observaciones = $3 WHERE id_consulta = $4',
+            [fecha_consulta, hora, observaciones, id]
+        );
+        
+        if (result.rowCount === 0) {
+            return res.status(404).json({ message: 'Consulta no encontrada' });
+        }
+        
+        res.json({
+            message: 'Consulta actualizada exitosamente',
+            body: {
+                consulta: { id_consulta: id, fecha_consulta, hora, observaciones }
+            }
+        });
+    } catch (error) {
+        console.error("Error al actualizar consulta:", error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
 export const deleteConsulta = async (req, res) => {
     try {
         const { id } = req.params;

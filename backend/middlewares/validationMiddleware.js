@@ -1,5 +1,18 @@
 import { body, validationResult } from 'express-validator';
 
+// Middleware para manejar errores de validación
+export const handleValidationErrors = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      success: false,
+      message: 'Errores de validación',
+      errors: errors.array()
+    });
+  }
+  next();
+};
+
 // Middleware para sanitizar entrada
 export const sanitizeInput = (req, res, next) => {
   // Sanitizar strings básicamente removiendo caracteres especiales
@@ -93,4 +106,47 @@ export const validatePatientId = [
   body('id')
     .isInt({ min: 1 })
     .withMessage('ID debe ser un número entero positivo')
+];
+
+// Validaciones para consultas
+export const validateConsultaCreation = [
+  body('id_paciente')
+    .notEmpty()
+    .withMessage('El ID del paciente es requerido')
+    .isInt({ min: 1 })
+    .withMessage('El ID del paciente debe ser un número entero positivo'),
+  
+  body('fecha_consulta')
+    .notEmpty()
+    .withMessage('La fecha de consulta es requerida')
+    .isISO8601()
+    .withMessage('La fecha de consulta debe tener formato válido (YYYY-MM-DD)'),
+  
+  body('hora')
+    .notEmpty()
+    .withMessage('La hora es requerida')
+    .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+    .withMessage('La hora debe tener formato HH:MM'),
+  
+  body('observaciones')
+    .optional()
+    .isLength({ max: 500 })
+    .withMessage('Las observaciones no deben exceder 500 caracteres')
+];
+
+export const validateConsultaUpdate = [
+  body('fecha_consulta')
+    .optional()
+    .isISO8601()
+    .withMessage('La fecha de consulta debe tener formato válido (YYYY-MM-DD)'),
+  
+  body('hora')
+    .optional()
+    .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+    .withMessage('La hora debe tener formato HH:MM'),
+  
+  body('observaciones')
+    .optional()
+    .isLength({ max: 500 })
+    .withMessage('Las observaciones no deben exceder 500 caracteres')
 ];
