@@ -74,7 +74,7 @@ function TablaPacientes() {
 
   const consultaValidationSchema = Yup.object().shape({
     fecha_consulta: Yup.date().required("La fecha de consulta es obligatoria"),
-    Hora: Yup.string().required("La hora es obligatoria"),
+    hora: Yup.string().required("La hora es obligatoria"),
     observaciones: Yup.string().required("Las observaciones son obligatorias"),
   });
 
@@ -311,7 +311,7 @@ function TablaPacientes() {
             <Formik
               initialValues={{
                 fecha_consulta: new Date().toISOString().split('T')[0], // Fecha actual por defecto
-                Hora: "",
+                hora: "",
                 observaciones: "",
               }}
               validationSchema={consultaValidationSchema}
@@ -325,9 +325,9 @@ function TablaPacientes() {
                     <ErrorMessage name="fecha_consulta" component="div" className="error" />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="Hora">Hora</label>
-                    <Field type="time" name="Hora" className="form-control" />
-                    <ErrorMessage name="Hora" component="div" className="error" />
+                    <label htmlFor="hora">Hora</label>
+                    <Field type="time" name="hora" className="form-control" />
+                    <ErrorMessage name="hora" component="div" className="error" />
                   </div>
                   <div className="form-group">
                     <label htmlFor="observaciones">Observaciones</label>
