@@ -3,7 +3,7 @@ import { queryAdapter } from "../db_adapter.js";
 export const getPacientes = async (req, res) => {
     try {
       const id_usuario = req.params.id;
-      const [result] = await queryAdapter.query("SELECT * FROM pacientes WHERE id_usuario = $1", [id_usuario]);
+      const result = await queryAdapter("SELECT * FROM pacientes WHERE id_usuario = $1", [id_usuario]);
       res.json(result); 
     } catch (error) {
       console.error("Error al obtener los pacientes:", error);
@@ -46,7 +46,7 @@ export const createPacientes = async (req, res) => {
       }
   
       // Guardar el paciente en la base de datos
-      const nuevoPaciente = await queryAdapter.query(
+      const nuevoPaciente = await queryAdapter(
         "INSERT INTO pacientes (id_usuario, nombre, fecha_nacimiento, sexo, telefono, ocupacion, nivel_actividad, objetivo, horas_sueno, habitos, antecedentes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
         [
           id_usuario,
@@ -83,14 +83,14 @@ export const createPacientes = async (req, res) => {
         antecedentes,
       } = req.body;
   
-      const result = await queryAdapter.query(
+      const result = await queryAdapter(
         `UPDATE pacientes 
          SET nombre = $1, telefono = $2, ocupacion = $3, nivel_actividad = $4, objetivo = $5, horas_sueno = $6, habitos = $7, antecedentes = $8
          WHERE id_paciente = $9`,
         [nombre, telefono, ocupacion, nivel_actividad, objetivo, horas_sueno, habitos, antecedentes, req.params.id]
       );
   
-      if (result.affectedRows === 0) {
+      if (result.rowCount === 0) {
         return res.status(404).json({ message: "Paciente no encontrado" });
       }
   
@@ -103,12 +103,12 @@ export const createPacientes = async (req, res) => {
 
   export const deletePacientes = async (req, res) => {
     try {
-      const result = await queryAdapter.query(
+      const result = await queryAdapter(
         `DELETE FROM pacientes WHERE id_paciente = $1`,
         [req.params.id]
       );
 
-      if (result.affectedRows === 0) {
+      if (result.rowCount === 0) {
         return res.status(404).json({ message: "Paciente no encontrado" });
       }
 

@@ -30,13 +30,11 @@ const handleValidationErrors = (req, res, next) => {
 
 const router = Router();
 
-// ===== ENDPOINTS DE DEBUG =====
-
 // Debug endpoint público para verificar estructura de tabla Pacientes
 router.get("/debug/table-structure", 
   async (req, res) => {
     try {
-      console.log('DEBUG: Verificando estructura de tabla pacientes con PostgreSQL');
+      console.log('DEBUG: Verificando estructura de tabla Pacientes con PostgreSQL');
       
       // Verificar si la tabla existe en PostgreSQL
       const tables = await pool.query(`
@@ -86,11 +84,46 @@ router.get("/debug/table-structure",
   }
 );
 
-// Debug endpoint para contar pacientes por usuario
+// Rutas protegidas
+
+router.get('/pacientes/:id', 
+  sanitizeInput,
+  param('id').isInt({ min: 1 }).withMessage('ID debe ser un número entero positivo'),
+  handleValidationErrors,
+  verifyToken, 
+  getPacientes
+);
+
+router.post('/pacientes', 
+  sanitizeInput,
+  validatePatientCreation,
+  handleValidationErrors,
+  verifyToken, 
+  createPacientes
+);
+
+router.put('/pacientes/:id', 
+  sanitizeInput,
+  param('id').isInt({ min: 1 }).withMessage('ID debe ser un número entero positivo'),
+  validatePatientUpdate,
+  handleValidationErrors,
+  verifyToken, 
+  updatePacientes
+);
+
+router.delete('/pacientes/:id', 
+  sanitizeInput,
+  param('id').isInt({ min: 1 }).withMessage('ID debe ser un número entero positivo'),
+  handleValidationErrors,
+  verifyToken, 
+  deletePacientes
+);
+
+// Debug endpoint para pacientes
 router.get('/debug/pacientes/:id', 
   async (req, res) => {
     try {
-      console.log('DEBUG: Iniciando debug de pacientes para usuario', req.params.id);
+      console.log('DEBUG: Iniciando debug de pacientes', req.params.id);
       
       // Verificar tabla pacientes con PostgreSQL
       const tables = await pool.query(`
@@ -101,7 +134,16 @@ router.get('/debug/pacientes/:id',
       console.log('DEBUG: Tabla pacientes encontrada:', tables.rows.length > 0);
       
       if (tables.rows.length > 0) {
-        // Obtener pacientes del usuario
+        // Verificar estructura con PostgreSQL
+        const columns = await pool.query(`
+          SELECT column_name 
+          FROM information_schema.columns 
+          WHERE table_name = 'pacientes' 
+          ORDER BY ordinal_position
+        `);
+        console.log('DEBUG: Columnas en pacientes:', columns.rows.map(c => c.column_name));
+        
+        // Intentar consulta con PostgreSQL
         const pacientes = await pool.query(`
           SELECT * FROM pacientes WHERE id_usuario = $1 LIMIT 5
         `, [req.params.id]);
@@ -109,6 +151,7 @@ router.get('/debug/pacientes/:id',
         res.json({
           debug: true,
           tableExists: true,
+          columns: columns.rows.map(c => c.column_name),
           totalPacientes: pacientes.rows.length,
           pacientes: pacientes.rows
         });
@@ -118,6 +161,7 @@ router.get('/debug/pacientes/:id',
           tableExists: false,
           error: 'Tabla pacientes no encontrada'
         });
+      }
       }
       
     } catch (error) {
@@ -131,49 +175,9 @@ router.get('/debug/pacientes/:id',
   }
 );
 
-// ===== RUTAS CRUD PRINCIPALES =====
-
-// GET todos los pacientes de un usuario
-router.get('/pacientes/:id', 
-  sanitizeInput,
-  param('id').isInt({ min: 1 }).withMessage('ID debe ser un número entero positivo'),
-  handleValidationErrors,
-  verifyToken, 
-  getPacientes
-);
-
-// POST crear nuevo paciente
-router.post('/pacientes', 
-  sanitizeInput,
-  validatePatientCreation,
-  handleValidationErrors,
-  verifyToken, 
-  createPacientes
-);
-
-// PUT actualizar paciente
-router.put('/pacientes/:id', 
-  sanitizeInput,
-  param('id').isInt({ min: 1 }).withMessage('ID debe ser un número entero positivo'),
-  validatePatientUpdate,
-  handleValidationErrors,
-  verifyToken, 
-  updatePacientes
-);
-
-// DELETE eliminar paciente
-router.delete('/pacientes/:id', 
-  sanitizeInput,
-  param('id').isInt({ min: 1 }).withMessage('ID debe ser un número entero positivo'),
-  handleValidationErrors,
-  verifyToken, 
-  deletePacientes
-);
-
-// ===== RUTAS ALTERNATIVAS SIN AUTH (SOLO PARA TESTING) =====
-
-// Ruta para obtener un paciente específico por ID (sin auth para testing)
+// Ruta para obtener un paciente específico por ID
 router.get('/paciente/:id_paciente', 
+  verifyToken,
   param('id_paciente').isInt().withMessage('ID del paciente debe ser un número entero'),
   handleValidationErrors,
   async (req, res) => {
@@ -181,22 +185,30 @@ router.get('/paciente/:id_paciente',
       const { id_paciente } = req.params;
       console.log('Obteniendo paciente con ID:', id_paciente);
       
-      const result = await pool.query(
-        'SELECT * FROM pacientes WHERE id_paciente = $1',
-        [id_paciente]
-      );
-      
-      if (result.rows.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: 'Paciente no encontrado'
+      let connection;
+      try {
+        connection = await pool.getConnection();
+        
+        const [rows] = await connection.query(
+          'SELECT * FROM pacientes WHERE id_paciente = ?',
+          [id_paciente]
+        );
+        
+        if (rows.length === 0) {
+          return res.status(404).json({
+            success: false,
+            message: 'Paciente no encontrado'
+          });
+        }
+        
+        res.json({
+          success: true,
+          paciente: rows[0]
         });
+        
+      } finally {
+        if (connection) connection.release();
       }
-      
-      res.json({
-        success: true,
-        paciente: result.rows[0]
-      });
       
     } catch (error) {
       console.error('Error al obtener paciente:', error);
@@ -209,22 +221,42 @@ router.get('/paciente/:id_paciente',
   }
 );
 
-// Ruta para obtener todos los pacientes (sin auth para testing)
-router.get('/pacientes', 
+// Ruta alternativa para obtener paciente sin autenticación
+router.get('/api/paciente/:id_paciente', 
+  param('id_paciente').isInt().withMessage('ID del paciente debe ser un número entero'),
+  handleValidationErrors,
   async (req, res) => {
     try {
-      console.log('Obteniendo todos los pacientes');
+      const { id_paciente } = req.params;
+      console.log('Ruta alternativa: Obteniendo paciente con ID:', id_paciente);
       
-      const result = await pool.query('SELECT * FROM pacientes ORDER BY fecha_registro DESC LIMIT 10');
-      
-      res.json({
-        success: true,
-        totalPacientes: result.rows.length,
-        pacientes: result.rows
-      });
+      let connection;
+      try {
+        connection = await pool.getConnection();
+        
+        const [rows] = await connection.query(
+          'SELECT * FROM pacientes WHERE id_paciente = ?',
+          [id_paciente]
+        );
+        
+        if (rows.length === 0) {
+          return res.status(404).json({
+            success: false,
+            message: 'Paciente no encontrado'
+          });
+        }
+        
+        res.json({
+          success: true,
+          paciente: rows[0]
+        });
+        
+      } finally {
+        if (connection) connection.release();
+      }
       
     } catch (error) {
-      console.error('Error al obtener pacientes:', error);
+      console.error('Error al obtener paciente:', error);
       res.status(500).json({
         success: false,
         message: 'Error interno del servidor',

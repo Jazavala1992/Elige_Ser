@@ -3,7 +3,7 @@ import { queryAdapter } from "../db_adapter.js";
 export const crearResultados = async (req, res) => {
     const {id_medicion, imc, suma_pliegues, porcentaje_grasa, masa_muscular_kg, porcentaje_masa_muscular, masa_osea, masa_residual} = req.body;
     try {
-        const [result] = await queryAdapter.query(
+        const result = await queryAdapter(
             'INSERT INTO resultados (id_medicion, imc, suma_pliegues, porcentaje_grasa, masa_muscular_kg, porcentaje_masa_muscular, masa_osea, masa_residual) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id_resultado',
             [id_medicion, imc, suma_pliegues, porcentaje_grasa, masa_muscular_kg, porcentaje_masa_muscular, masa_osea, masa_residual]
         );
@@ -30,7 +30,7 @@ export const obtenerResultadosPorPaciente = async (req, res) => {
     console.log("Buscando resultados para paciente ID:", id_paciente);
     
     try {
-        const [resultados] = await queryAdapter.query(
+        const resultados = await queryAdapter(
             `SELECT r.* 
              FROM resultados r
                 INNER JOIN mediciones m ON m.id_medicion = r.id_medicion

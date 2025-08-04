@@ -1,7 +1,6 @@
 import { queryAdapter } from "../db_adapter.js";
-import bccrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 export const registerUsuario = async (req, res) => {
   const { nombre, username, email, password } = req.body;
@@ -18,7 +17,7 @@ export const registerUsuario = async (req, res) => {
 
     // Guardar el usuario en la base de datos
     const query = "INSERT INTO usuarios (nombre, apellido_paterno, email, password) VALUES ($1, $2, $3, $4)";
-    await queryAdapter.query(query, [nombre, username, email, hashedPassword]);
+    await queryAdapter(query, [nombre, username, email, hashedPassword]);
 
     res.status(201).json({ message: "Usuario creado exitosamente" });
   } catch (error) {
@@ -60,7 +59,7 @@ export const loginUsuario = async (req, res) => {
     }
 
     // Buscar el usuario por email
-    const [result] = await queryAdapter.query("SELECT * FROM usuarios WHERE email = $1", [email]);
+    const result = await queryAdapter("SELECT * FROM usuarios WHERE email = $1", [email]);
 
     if (result.length === 0) {
       return res.status(401).json({ success: false, message: "Credenciales inválidas" });
@@ -114,7 +113,7 @@ export const loginUsuario = async (req, res) => {
 
 export const getUsuario = async (req, res) => {
     try {
-        const [result] = await queryAdapter.query('SELECT * FROM usuarios WHERE id_usuario = $1', [req.params.id]);
+        const result = await queryAdapter('SELECT * FROM usuarios WHERE id_usuario = $1', [req.params.id]);
         if (result.length === 0) {
             return res.status(404).json({ message: 'Usuario no encontrado' });
         }
@@ -127,9 +126,9 @@ export const getUsuario = async (req, res) => {
 
 export const updateUsuario = async (req, res) => {
     try {
-        const [result] = await queryAdapter.query('UPDATE usuarios SET nombre = $1, apellido_paterno = $2, email = $3 WHERE id_usuario = $4', 
+        const result = await queryAdapter('UPDATE usuarios SET nombre = $1, apellido_paterno = $2, email = $3 WHERE id_usuario = $4', 
             [req.body.nombre, req.body.apellido_paterno, req.body.email, req.params.id_usuario]);
-        if (result.affectedRows === 0) return res.status(404).json({ message: 'Usuario no encontrado' });
+        if (result.rowCount === 0) return res.status(404).json({ message: 'Usuario no encontrado' });
         res.json({ message: 'Usuario actualizado' });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -138,8 +137,8 @@ export const updateUsuario = async (req, res) => {
 
 export const deleteUsuario = async (req, res) => {
     try {
-        const [result] = await queryAdapter.query('DELETE FROM usuarios WHERE id_usuario = $1', [req.params.id_usuario]);
-        if (result.affectedRows === 0) return res.status(404).json({ message: 'Usuario no encontrado' });
+        const result = await queryAdapter('DELETE FROM usuarios WHERE id_usuario = $1', [req.params.id_usuario]);
+        if (result.rowCount === 0) return res.status(404).json({ message: 'Usuario no encontrado' });
         res.json({ message: 'Usuario eliminado' });
     } catch (error) {
         res.status(500).json({ error: error.message });

@@ -3,7 +3,7 @@ import { queryAdapter } from "../db_adapter.js";
 export const createMedicion = async (req, res) => {
     const {id_consulta, peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral} = req.body;
     try {
-        const [result] = await queryAdapter.query(
+        const result = await queryAdapter(
             'INSERT INTO mediciones (id_consulta, peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20) RETURNING id_medicion',
             [id_consulta, peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral]);
         
@@ -50,7 +50,7 @@ export const createMedicion = async (req, res) => {
 export const getMedicionesByPaciente = async (req, res) => {
     const { id_paciente } = req.params;
     try {
-        const [mediciones] = await queryAdapter.query(
+        const mediciones = await queryAdapter(
             `SELECT m.* 
              FROM mediciones m
              INNER JOIN consultas c ON m.id_consulta = c.id_consulta
@@ -72,18 +72,18 @@ export const updateMedicion = async (req, res) => {
     const {peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral} = req.body;
     
     try {
-        const [result] = await queryAdapter.query(
+        const result = await queryAdapter(
             `UPDATE mediciones SET 
              peso = $1, talla = $2, pl_tricipital = $3, pl_bicipital = $4, pl_subescapular = $5, 
-             pl_supraespinal = $1, pl_suprailiaco = $2, pl_abdominal = $3, pl_muslo_medial = $4, 
-             pl_pantorrilla_medial = $1, per_brazo_reposo = $2, per_brazo_flex = $3, per_muslo_medio = $4, 
-             per_pantorrilla_medial = $1, per_cintura = $2, per_cadera = $3, diametro_femoral = $4, 
-             diametro_biestiloideo = $1, diametro_humeral = $2
-             WHERE id_medicion = $1`,
+             pl_supraespinal = $6, pl_suprailiaco = $7, pl_abdominal = $8, pl_muslo_medial = $9, 
+             pl_pantorrilla_medial = $10, per_brazo_reposo = $11, per_brazo_flex = $12, per_muslo_medio = $13, 
+             per_pantorrilla_medial = $14, per_cintura = $15, per_cadera = $16, diametro_femoral = $17, 
+             diametro_biestiloideo = $18, diametro_humeral = $19
+             WHERE id_medicion = $20`,
             [peso, talla, pl_tricipital, pl_bicipital, pl_subescapular, pl_supraespinal, pl_suprailiaco, pl_abdominal, pl_muslo_medial, pl_pantorrilla_medial, per_brazo_reposo, per_brazo_flex, per_muslo_medio, per_pantorrilla_medial, per_cintura, per_cadera, diametro_femoral, diametro_biestiloideo, diametro_humeral, id]
         );
         
-        if (result.affectedRows === 0) {
+        if (result.rowCount === 0) {
             return res.status(404).json({ message: 'Medición no encontrada' });
         }
         
@@ -100,9 +100,9 @@ export const updateMedicion = async (req, res) => {
 export const deleteMedicion = async (req, res) => {
     const { id } = req.params;
     try {
-        const [result] = await queryAdapter.query('DELETE FROM mediciones WHERE id_medicion = $1', [id]);
+        const result = await queryAdapter('DELETE FROM mediciones WHERE id_medicion = $1', [id]);
         
-        if (result.affectedRows === 0) {
+        if (result.rowCount === 0) {
             return res.status(404).json({ message: 'Medición no encontrada' });
         }
         

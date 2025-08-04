@@ -68,7 +68,7 @@ app.get('/', (req, res) => {
 app.get('/health', async (req, res) => {
     try {
         const { queryAdapter } = await import('./db_adapter.js');
-        const [result] = await queryAdapter.query('SELECT 1 as healthy');
+        const result = await queryAdapter('SELECT 1 as healthy');
         
         res.json({
             status: 'OK',
@@ -92,7 +92,7 @@ app.get('/api/debug/connection', async (req, res) => {
         const { queryAdapter } = await import('./db_adapter.js');
         console.log("🔧 Debug - Verificando conexión PostgreSQL");
         
-        const [result] = await queryAdapter.query('SELECT NOW() as current_time, version() as postgres_version');
+        const result = await queryAdapter('SELECT NOW() as current_time, version() as postgres_version');
         
         res.json({
             success: true,
