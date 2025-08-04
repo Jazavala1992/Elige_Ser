@@ -42,11 +42,35 @@ async function ensureAuthentication() {
         localStorage.setItem("token", token);
         localStorage.setItem("userId", response.data.user.id);
         console.log("✅ API: Auto-login exitoso");
+        console.log("🔑 API: Token recibido:", token.substring(0, 20) + "...");
       }
     } catch (error) {
       console.error("❌ API: Error en auto-login:", error);
       throw new Error("No se pudo autenticar automáticamente");
     }
+  }
+  
+  // Si el token es temporal, usarlo directamente. Si es JWT, verificar que no esté expirado
+  if (token.startsWith("temporary-")) {
+    console.log("✅ API: Usando token temporal");
+    return token;
+  }
+  
+  // Para tokens JWT, verificar si está cerca de expirar y renovar si es necesario
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const now = Date.now() / 1000;
+    if (payload.exp < now + 300) { // Si expira en menos de 5 minutos
+      console.log("🔄 API: Token JWT cerca de expirar, renovando...");
+      // Intentar renovar con auto-login
+      localStorage.removeItem("token");
+      return await ensureAuthentication();
+    }
+  } catch (e) {
+    // Si hay error parseando JWT, usar token temporal
+    console.log("🔄 API: Error parseando JWT, obteniendo token temporal...");
+    localStorage.removeItem("token");
+    return await ensureAuthentication();
   }
   
   return token;
