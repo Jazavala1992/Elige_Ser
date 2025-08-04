@@ -80,6 +80,36 @@ app.get('/api/test-db-connection', async (req, res) => {
     }
 });
 
+// Ruta para verificar estructura de tablas
+app.get('/api/test-db-tables', async (req, res) => {
+    try {
+        const { queryAdapter } = await import('./db_adapter.js');
+        console.log("🔧 Test - Verificando tablas existentes");
+        
+        // Verificar qué tablas existen
+        const [tables] = await queryAdapter.query(`
+            SELECT table_name 
+            FROM information_schema.tables 
+            WHERE table_schema = 'public'
+        `);
+        
+        res.json({
+            success: true,
+            message: 'Tablas encontradas',
+            tables: tables,
+            count: tables.length,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error("❌ Error verificando tablas:", error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
 // ===============================================
 // RUTAS DE TESTING CRUD COMPLETO SIN AUTENTICACIÓN
 // ===============================================
