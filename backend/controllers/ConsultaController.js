@@ -12,19 +12,53 @@ export const getConsultas = async (req, res) => {
 };
 
 export const createConsulta = async (req, res) => {
+    console.log("=== CREAR CONSULTA ===");
+    console.log("Headers:", req.headers);
+    console.log("Body recibido:", req.body);
+    console.log("User ID desde token:", req.userId);
+    
     try {
         const { id_paciente, fecha_consulta, hora, observaciones} = req.body;
+        
+        console.log("Datos extraídos:");
+        console.log("- id_paciente:", id_paciente, "(tipo:", typeof id_paciente, ")");
+        console.log("- fecha_consulta:", fecha_consulta, "(tipo:", typeof fecha_consulta, ")");
+        console.log("- hora:", hora, "(tipo:", typeof hora, ")");
+        console.log("- observaciones:", observaciones, "(tipo:", typeof observaciones, ")");
+        
+        // Validaciones básicas
+        if (!id_paciente) {
+            console.log("❌ Error: id_paciente es requerido");
+            return res.status(400).json({ message: 'id_paciente es requerido', error: 'MISSING_ID_PACIENTE' });
+        }
+        
+        if (!fecha_consulta) {
+            console.log("❌ Error: fecha_consulta es requerida");
+            return res.status(400).json({ message: 'fecha_consulta es requerida', error: 'MISSING_FECHA_CONSULTA' });
+        }
+        
+        if (!hora) {
+            console.log("❌ Error: hora es requerida");
+            return res.status(400).json({ message: 'hora es requerida', error: 'MISSING_HORA' });
+        }
+        
         const result = await queryAdapter('INSERT INTO consultas (id_paciente, fecha_consulta, hora, observaciones) VALUES ($1, $2, $3, $4) RETURNING id_consulta', [id_paciente, fecha_consulta, hora, observaciones]);
         
         const id_consulta = result[0].id_consulta;
         
-        res.json({
+        const responseData = {
             message: 'Consulta creada',
             body: {
                 consulta: { id_consulta: id_consulta, id_paciente, fecha_consulta, hora, observaciones }
             }
-        });
+        };
+        
+        console.log("✅ Consulta creada exitosamente con ID:", id_consulta);
+        res.status(201).json(responseData);
     } catch (error) {
+        console.error("❌ Error al crear consulta:", error);
+        console.error("Error details:", error.message);
+        console.error("Stack trace:", error.stack);
         res.status(500).json({ error: error.message });
     }
 };
