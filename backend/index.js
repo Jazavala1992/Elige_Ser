@@ -86,10 +86,10 @@ app.post('/api/simple-insert-paciente', async (req, res) => {
         const { queryAdapter } = await import('./db_adapter.js');
         console.log("🔧 Test - INSERT simple paciente");
         
-        // INSERT simple con valores mínimos
+        // INSERT simple con valores mínimos usando sintaxis MySQL (? se convierte automáticamente)
         const [result] = await queryAdapter.query(`
             INSERT INTO pacientes (id_usuario, nombre, fecha_nacimiento, sexo) 
-            VALUES ($1, $2, $3, $4) 
+            VALUES (?, ?, ?, ?) 
             RETURNING id_paciente, nombre
         `, [1, 'Test User', '1990-01-01', 'M']);
         
