@@ -80,6 +80,35 @@ app.get('/api/test-db-connection', async (req, res) => {
     }
 });
 
+// Ruta de prueba simple INSERT pacientes
+app.post('/api/simple-insert-paciente', async (req, res) => {
+    try {
+        const { queryAdapter } = await import('./db_adapter.js');
+        console.log("🔧 Test - INSERT simple paciente");
+        
+        // INSERT simple con valores mínimos
+        const [result] = await queryAdapter.query(`
+            INSERT INTO pacientes (id_usuario, nombre, fecha_nacimiento, sexo) 
+            VALUES ($1, $2, $3, $4) 
+            RETURNING id_paciente, nombre
+        `, [1, 'Test User', '1990-01-01', 'M']);
+        
+        res.json({
+            success: true,
+            message: 'Paciente creado exitosamente',
+            data: result[0],
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error("❌ Error INSERT simple:", error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
 // Ruta para verificar estructura de tabla pacientes
 app.get('/api/pacientes-schema', async (req, res) => {
     try {
