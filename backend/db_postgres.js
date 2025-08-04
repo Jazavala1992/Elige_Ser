@@ -1,4 +1,5 @@
 import pkg from 'pg';
+import './config.js'; // Asegurar que las variables de entorno se carguen
 const { Pool } = pkg;
 
 console.log('=== POSTGRESQL DATABASE CONFIGURATION ===');
@@ -18,7 +19,7 @@ if (process.env.DATABASE_URL) {
   console.log('Using DATABASE_URL for connection');
   pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    ssl: { rejectUnauthorized: false } // SSL requerido para Render
   });
 } else {
   // Usar variables individuales
@@ -29,7 +30,7 @@ if (process.env.DATABASE_URL) {
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
     port: process.env.DB_PORT || 5432,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    ssl: { rejectUnauthorized: false } // SSL requerido para Render
   });
 }
 
