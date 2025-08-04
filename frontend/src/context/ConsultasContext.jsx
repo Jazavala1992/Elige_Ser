@@ -1,5 +1,11 @@
-import React, { createContext, useContext, useState } from "react";
-import { crearConsultaRequest, eliminarConsultaRequest } from "../api/api";
+import React, { createContext, useContext, useState } from 'react';
+import { 
+  obtenerConsultasRequest, 
+  crearConsultaRequest, 
+  actualizarConsultaRequest,
+  eliminarConsultaRequest 
+} from '../api/api';
+import Swal from 'sweetalert2';
 
 const ConsultasContext = createContext();
 
@@ -27,6 +33,39 @@ export const ConsultasProvider = ({ children }) => {
     }
   };
 
+  const actualizarConsulta = async (id, consultaActualizada) => {
+    try {
+      const response = await actualizarConsultaRequest(id, consultaActualizada);
+      
+      if (response.data.success) {
+        // Actualizar la lista de consultas
+        setConsultas(prevConsultas => 
+          prevConsultas.map(consulta => 
+            consulta.id === id ? { ...consulta, ...consultaActualizada } : consulta
+          )
+        );
+        
+        Swal.fire({
+          title: '¡Éxito!',
+          text: 'Consulta actualizada correctamente',
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false
+        });
+        
+        return response.data;
+      }
+    } catch (error) {
+      console.error('Error al actualizar consulta:', error);
+      Swal.fire({
+        title: 'Error',
+        text: 'No se pudo actualizar la consulta',
+        icon: 'error'
+      });
+      throw error;
+    }
+  };
+
   const eliminarConsulta = async (id) => {
     try {
       await eliminarConsultaRequest(id);
@@ -48,6 +87,7 @@ export const ConsultasProvider = ({ children }) => {
       consultas, 
       setConsultas, 
       crearConsulta,
+      actualizarConsulta,
       eliminarConsulta
     }}>
       {children}

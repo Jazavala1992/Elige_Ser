@@ -126,12 +126,22 @@ export const getUsuario = async (req, res) => {
 
 export const updateUsuario = async (req, res) => {
     try {
-        const result = await queryAdapter('UPDATE usuarios SET nombre = $1, apellido_paterno = $2, email = $3 WHERE id_usuario = $4', 
-            [req.body.nombre, req.body.apellido_paterno, req.body.email, req.params.id_usuario]);
-        if (result.rowCount === 0) return res.status(404).json({ message: 'Usuario no encontrado' });
-        res.json({ message: 'Usuario actualizado' });
+        console.log("🔄 Actualizando usuario ID:", req.params.id);
+        console.log("📝 Datos recibidos:", req.body);
+        
+        const result = await queryAdapter(
+            'UPDATE usuarios SET nombre = $1, apellido_paterno = $2, apellido_materno = $3, email = $4, telefono = $5 WHERE id_usuario = $6', 
+            [req.body.nombre, req.body.apellido_paterno, req.body.apellido_materno, req.body.email, req.body.telefono, req.params.id]
+        );
+        
+        if (result.rowCount === 0) {
+            return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+        }
+        
+        res.json({ success: true, message: 'Usuario actualizado correctamente' });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error("Error al actualizar usuario:", error);
+        res.status(500).json({ success: false, error: error.message });
     }
 }
 

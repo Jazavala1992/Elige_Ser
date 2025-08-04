@@ -25,6 +25,16 @@ export const obtenerUsuarioRequest = async (id) => {
   return await axios.get(`${BASE_URL}/usuario/${id}`);
 };
 
+export const actualizarUsuarioRequest = async (id, usuario) => {
+  const token = localStorage.getItem("token");
+  console.log("🚀 API: Actualizando usuario ID:", id);
+  console.log("🔗 API: URL completa:", `${BASE_URL}/usuario/${id}`);
+  
+  return await axios.put(`${BASE_URL}/usuario/${id}`, usuario, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+};
+
 // Función helper para auto-login si no hay token
 async function ensureAuthentication() {
   let token = localStorage.getItem("token");
@@ -176,6 +186,16 @@ export const crearConsultaRequest = async (consulta) => {
   console.log("🔗 API: URL completa:", `${BASE_URL}/consultas`);
   
   return await axios.post(`${BASE_URL}/consultas`, consulta, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
+export const actualizarConsultaRequest = async (id, consulta) => {
+  const token = localStorage.getItem("token");
+  console.log("🚀 API: Actualizando consulta ID:", id);
+  console.log("🔗 API: URL completa:", `${BASE_URL}/consultas/${id}`);
+  
+  return await axios.put(`${BASE_URL}/consultas/${id}`, consulta, {
     headers: { Authorization: `Bearer ${token}` }
   });
 }

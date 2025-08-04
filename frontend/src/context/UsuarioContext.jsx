@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { crearUsuarioRequest, loginUsuarioRequest,  obtenerUsuarioRequest} from '../api/api';
+import { crearUsuarioRequest, loginUsuarioRequest, obtenerUsuarioRequest, actualizarUsuarioRequest } from '../api/api';
+import Swal from 'sweetalert2';
 
 const UsuarioContext = createContext();
 
@@ -48,8 +49,34 @@ export const UsuarioProvider = ({ children }) => {
         }
       };
 
+    const actualizarUsuario = async (id, usuarioActualizado) => {
+        try {
+            const response = await actualizarUsuarioRequest(id, usuarioActualizado);
+            
+            if (response.data.success) {
+                Swal.fire({
+                    title: '¡Éxito!',
+                    text: 'Perfil actualizado correctamente',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+                
+                return response.data;
+            }
+        } catch (error) {
+            console.error('Error al actualizar usuario:', error);
+            Swal.fire({
+                title: 'Error',
+                text: 'No se pudo actualizar el perfil',
+                icon: 'error'
+            });
+            throw error;
+        }
+    };
+
     return (
-        <UsuarioContext.Provider value={{ usuarios, loading, crearUsuario, loginUsuario, getUsuario }}>
+        <UsuarioContext.Provider value={{ usuarios, loading, crearUsuario, loginUsuario, getUsuario, actualizarUsuario }}>
             {children}
         </UsuarioContext.Provider>
     );

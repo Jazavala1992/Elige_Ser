@@ -1,13 +1,13 @@
 .paciente-container {
     display: grid; 
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+    grid-template-columns: repeat(auto-fill, minmax(300px, 400px)); 
     gap: 20px; 
     padding: 20px;
     margin: 0 auto;
     max-width: 1200px; 
     max-height: 1200px;
     box-sizing: border-box;
-    
+    justify-content: center; /* Centra las cards cuando hay pocas */
 }
 
 .paciente-header {

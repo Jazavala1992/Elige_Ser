@@ -14,10 +14,11 @@ router.post("/usuarios/login", loginUsuario);
 
 // Ruta temporal sin autenticación para debug - WORKAROUND
 router.get("/usuario/:id", getUsuario);
+router.put("/usuario/:id", updateUsuario);
 
 // Rutas protegidas que requieren autenticación (comentadas temporalmente)
 // router.get("/usuario/:id", verifyToken, getUsuario);
-router.put("/usuario/:id_usuario", verifyToken, updateUsuario);
+// router.put("/usuario/:id_usuario", verifyToken, updateUsuario);
 router.delete("/usuario/:id_usuario", verifyToken, deleteUsuario);
 
 export default router;
