@@ -109,29 +109,24 @@ app.post('/api/simple-insert-paciente', async (req, res) => {
     }
 });
 
-// Ruta para verificar estructura de tabla pacientes
-app.get('/api/pacientes-schema', async (req, res) => {
+// Ruta para verificar datos en tabla usuarios
+app.get('/api/check-usuarios', async (req, res) => {
     try {
         const { queryAdapter } = await import('./db_adapter.js');
-        console.log("🔧 Test - Verificando estructura tabla pacientes");
+        console.log("🔧 Test - Verificando usuarios existentes");
         
-        // Verificar estructura de la tabla pacientes
-        const [columns] = await queryAdapter.query(`
-            SELECT column_name, data_type, is_nullable, column_default
-            FROM information_schema.columns 
-            WHERE table_name = 'pacientes' 
-            AND table_schema = 'public'
-            ORDER BY ordinal_position
-        `);
+        // Verificar qué usuarios existen
+        const [usuarios] = await queryAdapter.query('SELECT id_usuario, nombre, email FROM usuarios LIMIT 5');
         
         res.json({
             success: true,
-            message: 'Estructura tabla pacientes',
-            columns: columns,
+            message: 'Usuarios encontrados',
+            usuarios: usuarios,
+            count: usuarios.length,
             timestamp: new Date().toISOString()
         });
     } catch (error) {
-        console.error("❌ Error verificando estructura:", error);
+        console.error("❌ Error verificando usuarios:", error);
         res.status(500).json({ 
             success: false, 
             error: error.message,
