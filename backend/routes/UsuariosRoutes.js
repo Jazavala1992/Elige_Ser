@@ -8,6 +8,10 @@ const router = Router();
 router.post("/register", registerUsuario);
 router.post("/login", loginUsuario);
 
+// Rutas adicionales para compatibilidad con frontend
+router.post("/usuarios/register", registerUsuario);
+router.post("/usuarios/login", loginUsuario);
+
 // Ruta temporal sin autenticación para debug - WORKAROUND
 router.get("/usuario/:id", getUsuario);
 

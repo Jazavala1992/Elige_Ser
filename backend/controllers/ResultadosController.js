@@ -1,7 +1,19 @@
 import { queryAdapter } from "../db_adapter.js";
 
 export const crearResultados = async (req, res) => {
+    console.log("=== CREAR RESULTADOS ===");
+    console.log("Headers:", req.headers);
+    console.log("Body recibido:", req.body);
+    console.log("User ID desde token:", req.userId);
+    
     const {id_medicion, imc, suma_pliegues, porcentaje_grasa, masa_muscular_kg, porcentaje_masa_muscular, masa_osea, masa_residual} = req.body;
+    
+    // Validar que id_medicion esté presente
+    if (!id_medicion) {
+        console.log("❌ Error: id_medicion es requerido");
+        return res.status(400).json({ message: 'id_medicion es requerido', error: 'MISSING_ID_MEDICION' });
+    }
+    
     try {
         const result = await queryAdapter(
             'INSERT INTO resultados (id_medicion, imc, suma_pliegues, porcentaje_grasa, masa_muscular_kg, porcentaje_masa_muscular, masa_osea, masa_residual) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id_resultado',
@@ -11,16 +23,20 @@ export const crearResultados = async (req, res) => {
         // PostgreSQL devuelve el ID en result[0].id_resultado con RETURNING
         const id_resultado = result[0].id_resultado;
         
-        res.status(201).json({
+        const responseData = {
             message: 'Resultados guardados correctamente',
             body: {
                 resultado: { id_resultado: id_resultado, id_medicion, imc, suma_pliegues, porcentaje_grasa, masa_muscular_kg, porcentaje_masa_muscular, masa_osea, masa_residual }
             }
-        });
+        };
         
-        console.log("Resultados guardados exitosamente con ID:", id_resultado);
+        console.log("✅ Resultados guardados exitosamente con ID:", id_resultado);
+        res.status(201).json(responseData);
+        
     } catch (error) {
-        console.error("Error al guardar resultados:", error);
+        console.error("❌ Error al guardar resultados:", error);
+        console.error("Error details:", error.message);
+        console.error("Stack trace:", error.stack);
         res.status(500).json({ message: 'Error interno del servidor', error: error.message });
     }
 }
