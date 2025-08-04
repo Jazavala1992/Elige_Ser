@@ -42,9 +42,10 @@ export const obtenerPacientePorIdRequest = async (idPaciente) => {
   const token = localStorage.getItem("token");
   
   console.log("🚀 API: Solicitando paciente con ID:", idPaciente);
-  console.log("🔗 API: URL completa:", `${BASE_URL}/paciente/${idPaciente}`);
+  console.log("🔗 API: URL completa:", `${BASE_URL}/pacientes/${idPaciente}`);
+  console.log("🔑 API: Token:", token ? "Presente" : "No encontrado");
   
-  return await axios.get(`${BASE_URL}/paciente/${idPaciente}`, {
+  return await axios.get(`${BASE_URL}/pacientes/${idPaciente}`, {
     headers: { Authorization: `Bearer ${token}` }
   });
 }
